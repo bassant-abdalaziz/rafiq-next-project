@@ -36,7 +36,6 @@ export default function Login() {
     const payload: LogiNPayload = {
       email: data.email,
       password: data.password,
-      rememberMe: data.rememberMe,
     };
 
     try {
