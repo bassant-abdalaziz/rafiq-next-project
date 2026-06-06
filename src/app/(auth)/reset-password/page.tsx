@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { resetPassword } from "@/actions/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import Image from "next/image";
 import { PasswordRules } from "@/components/ui/password-rules";
@@ -16,8 +16,10 @@ import { type ResetPasswordFormValues, resetPasswordSchema } from "@/schemas/aut
 export default function ResetPassword() {
   const router = useRouter();
 
-  const searchParams = useSearchParams();
-  const accessToken = searchParams.get("access_token");
+  const params = new URLSearchParams(window.location.search);
+  const accessToken = params.get("access_token");
+  console.log(accessToken);
+  
 
   const [showPassword, setShowPassword] = useState(false);
 
