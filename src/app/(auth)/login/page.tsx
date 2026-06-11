@@ -10,10 +10,11 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import Image from "next/image";
 import { useState } from "react";
-import { type LoginFormValues, LogInSchema } from "@/schemas/auth";
-import { AuthFormLayout } from "@/components/ui/auth-form-layout";
+import { LogInSchema, type LoginFormValues } from "@/schemas/auth";
 import { Checkbox } from "@/components/ui/check-box";
 import { toast } from "sonner";
+import { AuthFormContent } from "@/components/auth/auth-form-content";
+import { getErrorMessage } from "@/utils/helpers";
 
 export default function Login() {
   const router = useRouter();
@@ -29,6 +30,7 @@ export default function Login() {
     defaultValues: {
       email: "",
       password: "",
+      rememberMe: false,
     },
   });
 
@@ -36,20 +38,24 @@ export default function Login() {
     const payload: LogiNPayload = {
       email: data.email,
       password: data.password,
+      rememberMe: data.rememberMe,
     };
 
     try {
-      await logIn(payload);
+      const res = await logIn(payload);
 
-      router.push("/");
+      if (res.ok && res.status === 200) {
+        router.push("/project");
+      }
     } catch (error) {
-      const message = error instanceof Error && error.message;
+      const message = getErrorMessage(error);
+
       toast.error(message);
     }
   };
 
   return (
-    <AuthFormLayout
+    <AuthFormContent
       title="Welcome Back"
       subtitle="Please enter your details to access your workspace"
       align="center"
@@ -108,6 +114,6 @@ export default function Login() {
           Log In
         </Button>
       </form>
-    </AuthFormLayout>
+    </AuthFormContent>
   );
 }

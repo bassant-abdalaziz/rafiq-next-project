@@ -11,8 +11,9 @@ import { useForm } from "react-hook-form";
 import Image from "next/image";
 import { PasswordRules } from "@/components/ui/password-rules";
 import { useState } from "react";
-import { AuthFormLayout } from "@/components/ui/auth-form-layout";
 import { toast } from "sonner";
+import { AuthFormContent } from "@/components/auth/auth-form-content";
+import { getErrorMessage } from "@/utils/helpers";
 
 export default function SignUp() {
   const router = useRouter();
@@ -63,16 +64,19 @@ export default function SignUp() {
     };
 
     try {
-      await signUp(payload);
-      router.push("/project");
+      const res = await signUp(payload);
+
+      if (res.ok && res.status === 200) {
+        router.push("/project");
+      }
     } catch (error) {
-      const message = error instanceof Error && error.message;
+      const message = getErrorMessage(error);
       toast.error(message);
     }
   };
 
   return (
-    <AuthFormLayout
+    <AuthFormContent
       title="Create your workspace"
       subtitle="Join the editorial approach to task management."
       align={{ desktop: "center", mobile: "left" }}
@@ -150,6 +154,6 @@ export default function SignUp() {
           Create Account
         </Button>
       </form>
-    </AuthFormLayout>
+    </AuthFormContent>
   );
 }

@@ -1,10 +1,11 @@
 "use client";
 
 import { forgotPassword } from "@/actions/auth";
-import { AuthFormLayout } from "@/components/ui/auth-form-layout";
+import { AuthFormContent } from "@/components/auth/auth-form-content";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ForgotPasswordFormValues, ForgotPasswordSchema } from "@/schemas/auth";
+import { getErrorMessage } from "@/utils/helpers";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
 import Link from "next/link";
@@ -62,9 +63,8 @@ export default function ForgotPasswordPage() {
     try {
       await sendResetLink(data.email);
     } catch (error) {
-      const message = error instanceof Error && error.message;
-
-      toast.error(message);
+      const message = getErrorMessage(error);
+    toast.error(message);
     }
   };
 
@@ -84,7 +84,7 @@ export default function ForgotPasswordPage() {
   const isResendDisabled = timer > 0 || trials >= MAX_TRIALS || isSubmitting;
 
   return (
-    <AuthFormLayout
+    <AuthFormContent
       title="Forgot password?"
       subtitle="No worries, we'll send you reset instructions."
       align={{ mobile: "center", desktop: "left" }}
@@ -189,6 +189,6 @@ export default function ForgotPasswordPage() {
           </div>
         </div>
       )}
-    </AuthFormLayout>
+    </AuthFormContent>
   );
 }

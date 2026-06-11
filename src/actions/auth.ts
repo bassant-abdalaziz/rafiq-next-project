@@ -5,30 +5,60 @@ import { LogiNPayload, LoginResponse, SignUpPayload } from "@/types/auth";
 import { cookies } from "next/headers";
 
 export async function signUp(data: SignUpPayload) {
-  return apiFetch("/auth/v1/signup", {
+  const response = await apiFetch<LoginResponse>("/auth/v1/signup", {
     method: "POST",
-
     body: JSON.stringify(data),
   });
-}
 
-export async function logIn(data: LogiNPayload) {
-  const res = await apiFetch<LoginResponse>("/auth/v1/token?grant_type=password", {
-    method: "POST",
-    body: JSON.stringify({ email: data.email, password: data.password }),
-  });
+  const signUpData = response.data;
 
   const cookieStore = await cookies();
 
-  cookieStore.set("access_token", res.access_token, {
+  cookieStore.set("access_token", signUpData.access_token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
     path: "/",
-    maxAge: res.expires_in,
+    maxAge: signUpData.expires_in,
   });
 
-  cookieStore.set("refresh_token", res.refresh_token, {
+  cookieStore.set("refresh_token", signUpData.refresh_token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    path: "/",
+    maxAge: signUpData.expires_in,
+  });
+
+  return {
+    ok: response.ok,
+    status: response.status,
+    user: signUpData.user,
+  };
+}
+
+export async function logIn(data: LogiNPayload) {
+  const response = await apiFetch<LoginResponse>("/auth/v1/token?grant_type=password", {
+    method: "POST",
+    body: JSON.stringify({
+      email: data.email,
+      password: data.password,
+    }),
+  });
+
+  const loginData = response.data;
+
+  const cookieStore = await cookies();
+
+  cookieStore.set("access_token", loginData.access_token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    path: "/",
+    maxAge: loginData.expires_in,
+  });
+
+  cookieStore.set("refresh_token", loginData.refresh_token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
@@ -45,20 +75,27 @@ export async function logIn(data: LogiNPayload) {
   });
 
   return {
-    user: res.user,
+    ok: response.ok,
+    status: response.status,
+    user: loginData.user,
   };
 }
 
 export async function forgotPassword(email: string) {
-  return apiFetch("/auth/v1/recover", {
+  const response = await apiFetch("/auth/v1/recover", {
     method: "POST",
-
     body: JSON.stringify({ email }),
   });
+
+  return {
+    ok: response.ok,
+    status: response.status,
+    data: response.data,
+  };
 }
 
 export async function resetPassword(data: { password: string; accessToken: string }) {
-  return apiFetch("/auth/v1/user", {
+  const response = await apiFetch("/auth/v1/user", {
     method: "PUT",
     headers: {
       Authorization: `Bearer ${data.accessToken}`,
@@ -67,4 +104,10 @@ export async function resetPassword(data: { password: string; accessToken: strin
       password: data.password,
     }),
   });
+
+  return {
+    ok: response.ok,
+    status: response.status,
+    data: response.data,
+  };
 }

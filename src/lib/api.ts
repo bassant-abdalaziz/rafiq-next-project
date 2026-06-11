@@ -1,7 +1,13 @@
-import "server-only";
+"use server";
 
 import { cookies } from "next/headers";
 import type { LoginResponse } from "@/types/auth";
+
+type ApiFetchResponse<TResponse> = {
+  ok: boolean;
+  status: number;
+  data: TResponse;
+};
 
 type ApiFetchOptions = RequestInit & {
   requiresAuth?: boolean;
@@ -28,15 +34,15 @@ async function refreshAccessToken() {
     }),
   });
 
-  cookieStore.set("access_token", res.access_token, {
+  cookieStore.set("access_token", res.data.access_token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
     path: "/",
-    maxAge: res.expires_in,
+    maxAge: res.data.expires_in,
   });
 
-  cookieStore.set("refresh_token", res.refresh_token, {
+  cookieStore.set("refresh_token", res.data.refresh_token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
@@ -44,13 +50,23 @@ async function refreshAccessToken() {
     ...(rememberMe ? { maxAge: ONE_MONTH } : {}),
   });
 
-  return res.access_token;
+  return res.data.access_token;
+}
+
+async function safeFetch(url: string, options: RequestInit) {
+  try {
+    return await fetch(url, options);
+  } catch (error) {
+    console.log("Network error:", error);
+
+    throw new Error("Network error. Please check your internet connection and try again.");
+  }
 }
 
 export async function apiFetch<TResponse = unknown>(
   endpoint: string,
   options: ApiFetchOptions = {}
-): Promise<TResponse> {
+): Promise<ApiFetchResponse<TResponse>> {
   const { requiresAuth = false, ...fetchOptions } = options;
 
   const baseUrl = process.env.API_BASE_URL;
@@ -65,6 +81,7 @@ export async function apiFetch<TResponse = unknown>(
   }
 
   const cookieStore = await cookies();
+
   const accessToken = cookieStore.get("access_token")?.value;
 
   const headers = new Headers(fetchOptions.headers);
@@ -72,42 +89,59 @@ export async function apiFetch<TResponse = unknown>(
   headers.set("Content-Type", "application/json");
   headers.set("apikey", apiKey);
 
+  //if endpoint needs auth and access token not exists
+  //try generate new access token from refresh token
+  if (requiresAuth && !accessToken) {
+    const newAccessToken = await refreshAccessToken();
+
+    if (!newAccessToken) {
+      throw new Error("Session expired. Please log in again.");
+    }
+  }
+
   if (requiresAuth && accessToken) {
     headers.set("Authorization", `Bearer ${accessToken}`);
   }
 
-  let response = await fetch(`${baseUrl}${endpoint}`, {
+  let response = await safeFetch(`${baseUrl}${endpoint}`, {
     ...fetchOptions,
     headers,
     cache: "no-store",
   });
 
-  if (response.status === 401 && requiresAuth) {
+  let responseData = await response.json().catch(() => null);
+
+  // if request fails >>>> token expired
+  if (!response.ok && requiresAuth) {
     const newAccessToken = await refreshAccessToken();
 
     if (!newAccessToken) {
-      throw new Error("Session expired");
+      throw new Error("Session expired. Please log in again.");
     }
 
     headers.set("Authorization", `Bearer ${newAccessToken}`);
 
-    response = await fetch(`${baseUrl}${endpoint}`, {
+    response = await safeFetch(`${baseUrl}${endpoint}`, {
       ...fetchOptions,
       headers,
       cache: "no-store",
     });
+
+    responseData = await response.json().catch(() => null);
   }
 
-  const responseData = await response.json().catch(() => null);
-
   if (!response.ok) {
-    // console.log("API error status:", response.status);
-    // console.log("API error data:", responseData);
-    
+    // console.log("API error status>>>>>>>>>>>>>>>>>>>", response.status);
+    // console.log("API error data>>>>>>>>>>>>>>>>>>>>>>>", responseData);
+
     throw new Error(
       responseData?.msg || responseData?.message || responseData?.error || "Request failed"
     );
   }
 
-  return responseData as TResponse;
+  return {
+    ok: response.ok,
+    status: response.status,
+    data: responseData as TResponse,
+  };
 }

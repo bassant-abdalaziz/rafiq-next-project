@@ -9,9 +9,10 @@ import { useForm } from "react-hook-form";
 import Image from "next/image";
 import { PasswordRules } from "@/components/ui/password-rules";
 import { useState } from "react";
-import { AuthFormLayout } from "@/components/ui/auth-form-layout";
 import { toast } from "sonner";
 import { type ResetPasswordFormValues, resetPasswordSchema } from "@/schemas/auth";
+import { AuthFormContent } from "@/components/auth/auth-form-content";
+import { getErrorMessage } from "@/utils/helpers";
 
 export default function ResetPasswordContent() {
   const router = useRouter();
@@ -78,14 +79,13 @@ export default function ResetPasswordContent() {
         router.push("/login");
       }, 3000);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Something went wrong";
-
+      const message = getErrorMessage(error);
       toast.error(message);
     }
   };
 
   return (
-    <AuthFormLayout
+    <AuthFormContent
       title="Create a New Password"
       subtitle="Create a new, strong password to secure your workstation access."
       align={{ desktop: "left", mobile: "center" }}
@@ -132,6 +132,6 @@ export default function ResetPasswordContent() {
           Update Password
         </Button>
       </form>
-    </AuthFormLayout>
+    </AuthFormContent>
   );
 }
