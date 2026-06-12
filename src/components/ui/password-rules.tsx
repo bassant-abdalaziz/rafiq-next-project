@@ -1,4 +1,5 @@
-import Image from "next/image";
+import CheckedTrueIcon from "@/assets/icons/checked-true.svg";
+import UnCheckedTrueIcon from "@/assets/icons/unchecked-true.svg";
 
 type PasswordRule = {
   label: string;
@@ -26,13 +27,11 @@ export function PasswordRules({ rules, title }: PasswordRulesProps) {
       <div>
         {rules.map((rule) => (
           <div key={rule.label} className="mt-2 flex items-center gap-2 first:mt-0">
-            <Image
-              src={rule.isValid ? "/images/checked-true.svg" : "/images/unchecked-true.svg"}
-              alt={rule.isValid ? "Rule passed" : "Rule not passed"}
-              width={15}
-              height={15}
-            />
-
+            {rule.isValid ? (
+              <CheckedTrueIcon aria-hidden="true" />
+            ) : (
+              <UnCheckedTrueIcon aria-hidden="true" />
+            )}
             <span>{rule.label}</span>
           </div>
         ))}

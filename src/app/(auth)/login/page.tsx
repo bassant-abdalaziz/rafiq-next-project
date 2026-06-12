@@ -8,13 +8,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import Image from "next/image";
 import { useState } from "react";
 import { LogInSchema, type LoginFormValues } from "@/schemas/auth";
 import { Checkbox } from "@/components/ui/check-box";
 import { toast } from "sonner";
 import { AuthFormContent } from "@/components/auth/auth-form-content";
 import { getErrorMessage } from "@/utils/helpers";
+import EyeIcon from "@/assets/icons/eye.svg";
+import EyeOffIcon from "@/assets/icons/eye-off.svg";
 
 export default function Login() {
   const router = useRouter();
@@ -84,15 +85,10 @@ export default function Login() {
           type={showPassword ? "text" : "password"}
           placeholder="Password"
           error={errors.password?.message}
-          rightElement={
-            <Image
-              src={showPassword ? "/images/eye-off.svg" : "/images/eye.svg"}
-              alt={showPassword ? "Hide password" : "Show password"}
-              width={20}
-              height={20}
-              onClick={() => setShowPassword((prev) => !prev)}
-              className="cursor-pointer"
-            />
+          iconElement={
+            <div onClick={() => setShowPassword((prev) => !prev)}>
+              {showPassword ? <EyeOffIcon aria-hidden="true" /> : <EyeIcon aria-hidden="true" />}
+            </div>
           }
           {...register("password")}
         />

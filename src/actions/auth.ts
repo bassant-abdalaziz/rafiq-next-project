@@ -111,3 +111,12 @@ export async function resetPassword(data: { password: string; accessToken: strin
     data: response.data,
   };
 }
+
+export async function getCurrentUser() {
+  const response = await apiFetch<LoginResponse["user"]>("/auth/v1/user", {
+    method: "GET",
+    requiresAuth: true,
+  });
+
+  return response.data;
+}

@@ -7,11 +7,13 @@ import { Input } from "@/components/ui/input";
 import { ForgotPasswordFormValues, ForgotPasswordSchema } from "@/schemas/auth";
 import { getErrorMessage } from "@/utils/helpers";
 import { zodResolver } from "@hookform/resolvers/zod";
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import ArrowBackIcon from "@/assets/icons/arrow-back.svg";
+import PasswordCheckedTrueIcon from "@/assets/icons/password-checked-true.svg";
+import ClockIcon from "@/assets/icons/clock.svg";
 
 const RESET_TIMER_SECONDS = 5 * 60;
 const MAX_TRIALS = 3;
@@ -64,7 +66,7 @@ export default function ForgotPasswordPage() {
       await sendResetLink(data.email);
     } catch (error) {
       const message = getErrorMessage(error);
-    toast.error(message);
+      toast.error(message);
     }
   };
 
@@ -111,7 +113,7 @@ export default function ForgotPasswordPage() {
       </form>
 
       <div className="mt-6 flex w-full items-center justify-center gap-2">
-        <Image src="/images/arrow-back.svg" alt="arrow back" width={15} height={15} />
+        <ArrowBackIcon aria-hidden="true" />
 
         <Link href="/login" className="font-semibold text-primary">
           Back to log in
@@ -123,7 +125,7 @@ export default function ForgotPasswordPage() {
           {/* Mobile UI */}
           <div className="rounded-sm  bg-[#E6F8EF] p-4 md:hidden">
             <div className="flex items-start gap-3">
-              <Image src="/images/password-checked-true.svg" alt="success" width={18} height={18} />
+              <PasswordCheckedTrueIcon aria-hidden="true" className="h-10 w-10" />
 
               <p className="text-sm leading-5 text-[#005235] m-0">
                 If an account exists with this email, we&apos;ve sent a password reset link.
@@ -152,12 +154,7 @@ export default function ForgotPasswordPage() {
           <div className="hidden md:block">
             <div className="rounded-lg bg-[#E6F8EF] p-4">
               <div className="flex items-start gap-3">
-                <Image
-                  src="/images/password-checked-true.svg"
-                  alt="success"
-                  width={18}
-                  height={18}
-                />
+                <PasswordCheckedTrueIcon aria-hidden="true" className="h-10 w-7" />
 
                 <p className="text-sm leading-5 text-[#005235]">
                   If an account exists with this email, we&apos;ve sent a password reset link.
@@ -178,9 +175,7 @@ export default function ForgotPasswordPage() {
                 onClick={handleResend}
               >
                 <span className="flex items-center justify-center gap-2">
-                  {timer > 0 && trials < MAX_TRIALS && (
-                    <Image src="/images/clock.svg" alt="" width={18} height={18} />
-                  )}
+                  {timer > 0 && trials < MAX_TRIALS && <ClockIcon aria-hidden="true" />}
 
                   {timer > 0 ? `Resend in ${formatTimer(timer)}` : "Resend"}
                 </span>

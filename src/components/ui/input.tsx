@@ -6,7 +6,7 @@ type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   label: string;
   error?: string;
   helperText?: string;
-  rightElement?: ReactNode;
+  iconElement?: ReactNode;
 };
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
@@ -15,7 +15,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       label,
       error,
       helperText,
-      rightElement,
+      iconElement,
       id,
       className = "",
       ...props
@@ -50,7 +50,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               text-base font-normal
               outline-none transition
               placeholder:text-[#737685]
-              ${rightElement ? "pr-12" : ""}
+              ${iconElement ? "pr-12" : ""}
               ${
                 hasError
                   ? "bg-[#FFDAD6] text-error focus:ring-2 focus:ring-red-100"
@@ -61,9 +61,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             {...props}
           />
 
-          {rightElement && (
+          {iconElement && (
             <div className="absolute right-4 top-1/2 flex -translate-y-1/2 items-center">
-              {rightElement}
+              {iconElement}
             </div>
           )}
         </div>
