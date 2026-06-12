@@ -1,23 +1,27 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { BottomMobileNavbar } from "./bottom-mobile-navbar";
 import { Navbar } from "./navbar";
 import { Sidebar } from "./sidebar";
+import { LoginResponse } from "@/types/auth";
+import { useAppDispatch } from "@/redux/hooks";
+import { setUser } from "@/redux/slices/userSlice";
 
 type DashboardShellProps = {
   children: ReactNode;
-  userName: string;
-  jobTitle?: string;
+  user: LoginResponse["user"];
 };
 
-export function DashboardShell({
-  children,
-  userName,
-  jobTitle,
-}: DashboardShellProps) {
+export function DashboardShell({ children, user }: DashboardShellProps) {
+  const dispatch = useAppDispatch();
+
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    dispatch(setUser(user));
+  }, [dispatch, user]);
 
   return (
     <div className="min-h-screen bg-background ">
@@ -30,15 +34,9 @@ export function DashboardShell({
         />
 
         <div className="flex min-h-screen flex-1 flex-col">
-          <Navbar
-            userName={userName}
-            jobTitle={jobTitle}
-            onOpenMenu={() => setIsMobileMenuOpen(true)}
-          />
+          <Navbar onOpenMenu={() => setIsMobileMenuOpen(true)} />
 
-          <main className="flex-1 px-5 py-6 pb-24 md:px-8 md:pb-8">
-            {children}
-          </main>
+          <main className="flex-1 px-5 py-6 pb-24 md:px-8 md:pb-8">{children}</main>
         </div>
       </div>
 

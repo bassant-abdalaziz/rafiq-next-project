@@ -2,14 +2,18 @@
 
 import { getAvatarInitials } from "@/utils/helpers";
 import BurgerIcon from "@/assets/icons/burger.svg";
+import { useAppSelector } from "@/redux/hooks";
 
 type NavbarProps = {
-  userName: string;
-  jobTitle?: string;
   onOpenMenu: () => void;
 };
 
-export function Navbar({ userName, jobTitle, onOpenMenu }: NavbarProps) {
+export function Navbar({ onOpenMenu }: NavbarProps) {
+  const user = useAppSelector((state) => state.user.user);
+
+  const userName = user?.user_metadata?.name;
+  const jobTitle = user?.user_metadata?.department;
+
   return (
     <header className="flex  items-center justify-between border-b border-[#E4E8F1] bg-background px-6 py-3 h-18 md:justify-end ">
       <div className="flex items-center gap-1 md:hidden">
