@@ -13,7 +13,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
       <div>
         <label
           htmlFor={id}
-          className="flex cursor-pointer items-center gap-3 text-sm text-[#434654]"
+          className="flex cursor-pointer items-center gap-3 text-sm text-slate-darker"
         >
           <input
             id={id}

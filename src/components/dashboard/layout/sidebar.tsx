@@ -2,12 +2,17 @@
 
 import { menuItems } from "@/constants";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import TasklyIcon from "@/assets/icons/taskly.svg";
 import LogoutIcon from "@/assets/icons/log-out.svg";
 import CollapseIcon from "@/assets/icons/collapse.svg";
 import NotCollapseIcon from "@/assets/icons/not-collapse.svg";
+import { logOut } from "@/actions/auth";
+import { getErrorMessage } from "@/utils/helpers";
+import { toast } from "sonner";
+import { useAppDispatch } from "@/redux/hooks";
+import { clearUser } from "@/redux/slices/userSlice";
 
 type SidebarProps = {
   isCollapsed: boolean;
@@ -23,6 +28,23 @@ export function Sidebar({
   onCloseMobile,
 }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const dispatch = useAppDispatch()
+
+  const handleLogout = async () => {
+    try {
+      const response = await logOut();
+
+      if (response.ok && response.status === 200) {
+        dispatch(clearUser());
+
+        router.replace("/login");
+      }
+    } catch (error) {
+      const message = getErrorMessage(error);
+      toast.error(message );
+    }
+  };
 
   return (
     <>
@@ -93,6 +115,7 @@ export function Sidebar({
                 mt-3 flex h-10 w-full items-center gap-3 rounded-sm px-3 text-sm font-semibold text-error hover:bg-white
                 ${isCollapsed ? "md:justify-center md:px-0" : ""}
               `}
+              onClick={() => handleLogout()}
             >
               <LogoutIcon aria-hidden="true" />
               {!isCollapsed && <span>Logout</span>}

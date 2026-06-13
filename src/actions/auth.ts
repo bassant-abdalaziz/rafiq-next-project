@@ -120,3 +120,22 @@ export async function getCurrentUser() {
 
   return response.data;
 }
+
+export async function logOut() {
+  const response = await apiFetch("/auth/v1/logout", {
+    method: "POST",
+    requiresAuth: true,
+  });
+
+  const cookieStore = await cookies();
+
+  cookieStore.delete("access_token");
+  cookieStore.delete("refresh_token");
+  cookieStore.delete("remember_me");
+
+  return {
+    ok: response.ok,
+    status: response.status,
+    data: response.data,
+  };
+}

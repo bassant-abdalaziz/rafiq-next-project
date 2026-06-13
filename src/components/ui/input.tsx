@@ -1,5 +1,5 @@
 import { forwardRef } from "react";
-import type { InputHTMLAttributes, ReactNode } from "react";
+import type { InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from "react";
 
 type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   id: string;
@@ -10,18 +10,7 @@ type InputProps = InputHTMLAttributes<HTMLInputElement> & {
 };
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  (
-    {
-      label,
-      error,
-      helperText,
-      iconElement,
-      id,
-      className = "",
-      ...props
-    },
-    ref
-  ) => {
+  ({ label, error, helperText, iconElement, id, className = "", ...props }, ref) => {
     const hasError = Boolean(error);
 
     return (
@@ -40,21 +29,18 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             id={id}
             ref={ref}
             aria-invalid={hasError}
-            aria-describedby={
-              hasError ? `${id}-error` : helperText ? `${id}-helper` : undefined
-            }
             className={`
               w-full
               rounded-lg md:rounded-sm
               px-4 py-4.5 md:py-3.5
               text-base font-normal
               outline-none transition
-              placeholder:text-[#737685]
+              placeholder:text-slate-dark
               ${iconElement ? "pr-12" : ""}
               ${
                 hasError
                   ? "bg-[#FFDAD6] text-error focus:ring-2 focus:ring-red-100"
-                  : "bg-surface-highest text-[#737685] focus:ring-2 focus:ring-primary/20"
+                  : "bg-surface-highest text-slate-dark focus:ring-2 focus:ring-primary/20"
               }
               ${className}
             `}
@@ -68,18 +54,88 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
         </div>
 
-        {hasError ? (
-          <p id={`${id}-error`} className="mt-2 text-sm text-error">
-            {error}
-          </p>
-        ) : helperText ? (
-          <p id={`${id}-helper`} className="mt-2 text-sm text-slate-light">
-            {helperText}
-          </p>
-        ) : null}
+        {helperText ? <p className="mt-2 text-sm text-slate-light">{helperText}</p> : null}
+
+        {hasError && <p className="mt-2 text-sm text-error">{error}</p>}
       </div>
     );
   }
 );
 
 Input.displayName = "Input";
+
+type TextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
+  id: string;
+  label: string;
+  error?: string;
+  helperText?: string;
+  optionalText?: string;
+  count?: number;
+  maxLength?: number;
+};
+
+export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
+  (
+    { label, error, helperText, optionalText, count, maxLength, id, className = "", ...props },
+    ref
+  ) => {
+    const hasError = Boolean(error);
+
+    return (
+      <div className="w-full">
+        <div className="mb-1 flex items-center justify-between gap-4">
+          <label
+            htmlFor={id}
+            className={`block text-[11px] font-bold uppercase leading-[22.75px] tracking-[0.55px] ${
+              hasError ? "text-error" : "text-slate"
+            }`}
+          >
+            {label}
+          </label>
+
+          {optionalText && <span className="text-xs text-slate-light">{optionalText}</span>}
+        </div>
+
+        <textarea
+          id={id}
+          ref={ref}
+          aria-invalid={hasError}
+          maxLength={maxLength}
+          className={`
+            w-full
+            min-h-[120px] md:min-h-[145px]
+            resize-none
+            rounded-lg md:rounded-sm
+            px-4 py-4
+            text-base font-normal
+            outline-none transition
+            placeholder:text-slate-dark
+            ${
+              hasError
+                ? "bg-[#FFDAD6] text-error focus:ring-2 focus:ring-red-100"
+                : "bg-surface-highest text-slate-dark focus:ring-2 focus:ring-primary/20"
+            }
+            ${className}
+          `}
+          {...props}
+        />
+
+        <div className="mt-2 flex w-full items-start gap-4">
+          <div className="min-w-0 flex-1">
+            {helperText ? <p className="mt-2 text-sm text-slate-light">{helperText}</p> : null}
+
+            {hasError && <p className="mt-2 text-sm text-error">{error}</p>}
+          </div>
+
+          {typeof count === "number" && typeof maxLength === "number" && (
+            <p className="ml-auto shrink-0 text-xs text-slate">
+              {count} / {maxLength} characters
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+);
+
+Textarea.displayName = "Textarea";

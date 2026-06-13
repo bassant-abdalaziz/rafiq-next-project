@@ -163,7 +163,7 @@ export default function ForgotPasswordPage() {
             </div>
 
             <div className="mt-8">
-              <p className="mb-4 text-center text-[11px] font-bold uppercase tracking-[1.1px] text-[#434654]">
+              <p className="mb-4 text-center text-[11px] font-bold uppercase tracking-[1.1px] text-slate-darker">
                 Didn&apos;t receive the email?
               </p>
 

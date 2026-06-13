@@ -1,5 +1,4 @@
-"use server";
-
+import "server-only";
 import { cookies } from "next/headers";
 import type { LoginResponse } from "@/types/auth";
 
@@ -16,14 +15,14 @@ type ApiFetchOptions = RequestInit & {
 const ONE_MONTH = 60 * 60 * 24 * 30;
 
 //Keep user session alive by using refresh_token when access_token expires.
-async function refreshAccessToken() {
+async function refreshAccessToken():Promise<string | undefined> {
   const cookieStore = await cookies();
 
   const refreshToken = cookieStore.get("refresh_token")?.value;
   const rememberMe = cookieStore.get("remember_me")?.value === "true";
 
   if (!refreshToken) {
-    return null;
+    return undefined;
   }
 
   const res = await apiFetch<LoginResponse>("/auth/v1/token?grant_type=refresh_token", {
@@ -82,19 +81,19 @@ export async function apiFetch<TResponse = unknown>(
 
   const cookieStore = await cookies();
 
-  const accessToken = cookieStore.get("access_token")?.value;
+  let accessToken = cookieStore.get("access_token")?.value;
 
   const headers = new Headers(fetchOptions.headers);
 
   headers.set("Content-Type", "application/json");
   headers.set("apikey", apiKey);
 
-  //if endpoint needs auth and access token not exists
+   //if endpoint needs auth and access token not exists
   //try generate new access token from refresh token
   if (requiresAuth && !accessToken) {
-    const newAccessToken = await refreshAccessToken();
+    accessToken = await refreshAccessToken();
 
-    if (!newAccessToken) {
+    if (!accessToken) {
       throw new Error("Session expired. Please log in again.");
     }
   }
@@ -111,7 +110,7 @@ export async function apiFetch<TResponse = unknown>(
 
   let responseData = await response.json().catch(() => null);
 
-  // if request fails >>>> token expired
+   // if request fails >>>> token expired
   if (!response.ok && requiresAuth) {
     const newAccessToken = await refreshAccessToken();
 
