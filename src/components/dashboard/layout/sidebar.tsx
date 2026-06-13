@@ -1,6 +1,7 @@
 "use client";
 
-import { menuItems } from "@/constants";
+import { getMenuItems } from "@/constants";
+import { getProjectIdFromPathname } from "@/utils/helpers";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -28,8 +29,10 @@ export function Sidebar({
   onCloseMobile,
 }: SidebarProps) {
   const pathname = usePathname();
+  const projectId = getProjectIdFromPathname(pathname);
+  const menuItems = getMenuItems(projectId);
   const router = useRouter();
-  const dispatch = useAppDispatch()
+  const dispatch = useAppDispatch();
 
   const handleLogout = async () => {
     try {
@@ -42,7 +45,7 @@ export function Sidebar({
       }
     } catch (error) {
       const message = getErrorMessage(error);
-      toast.error(message );
+      toast.error(message);
     }
   };
 

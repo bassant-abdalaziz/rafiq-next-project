@@ -20,8 +20,7 @@ export default function ProjectsError({ error, reset }: ProjectsErrorProps) {
     const isAuthError =
       message.includes("unauthorized") ||
       message.includes("session expired") ||
-      message.includes("jwt") ||
-      message.includes("token");
+      message.includes("JWT expired");
 
     if (isAuthError) {
       router.replace("/login");

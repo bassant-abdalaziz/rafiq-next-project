@@ -29,7 +29,7 @@ export function Button({
   return (
     <button
       disabled={disabled || isLoading}
-      className={` rounded-lg md:rounded-xs py-4 md:py-3 font-semibold text-base transition disabled:cursor-not-allowed disabled:opacity-60 ${
+      className={` cursor-pointer rounded-lg md:rounded-xs py-4 md:py-3 font-semibold text-base transition disabled:cursor-not-allowed disabled:opacity-60 ${
         variantClasses[variant]
       }  ${fullWidth ? "w-full" : ""}  ${className}`}
       {...props}

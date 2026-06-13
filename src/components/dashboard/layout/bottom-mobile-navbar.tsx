@@ -1,11 +1,14 @@
 "use client";
 
-import { mobileItems } from "@/constants";
+import { getMobileItems } from "@/constants";
+import { getProjectIdFromPathname } from "@/utils/helpers";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 export function BottomMobileNavbar() {
   const pathname = usePathname();
+  const projectId = getProjectIdFromPathname(pathname);
+  const mobileItems = getMobileItems(projectId);
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-30 grid h-16 grid-cols-5 border-t border-[#E4E8F1] bg-surface-low md:hidden">

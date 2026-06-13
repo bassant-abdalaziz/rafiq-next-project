@@ -30,3 +30,28 @@ export function formatProjectDate(date: string) {
     year: "numeric",
   }).format(new Date(date));
 }
+
+export function getProjectIdFromPathname(pathname: string) {
+  const segments = pathname.split("/").filter(Boolean);
+
+  // /project
+  // segments = ["project"]
+
+  // /project/add
+  // segments = ["project", "add"]
+
+  // /project/123/epics
+  // segments = ["project", "123", "epics"]
+
+  if (segments[0] !== "project") {
+    return null;
+  }
+
+  const projectId = segments[1];
+
+  if (!projectId || projectId === "add") {
+    return null;
+  }
+
+  return projectId;
+}
