@@ -4,24 +4,21 @@ import { ReactNode, useEffect, useState } from "react";
 import { BottomMobileNavbar } from "./bottom-mobile-navbar";
 import { Navbar } from "./navbar";
 import { Sidebar } from "./sidebar";
-import { LoginResponse } from "@/types/auth";
 import { useAppDispatch } from "@/redux/hooks";
-import { setUser } from "@/redux/slices/userSlice";
+import { fetchCurrentUser } from "@/redux/slices/userSlice";
 
 type DashboardShellProps = {
   children: ReactNode;
-  user: LoginResponse["user"];
 };
 
-export function DashboardShell({ children, user }: DashboardShellProps) {
-  const dispatch = useAppDispatch();
-
+export function DashboardShell({ children }: DashboardShellProps) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  const dispatch = useAppDispatch();
   useEffect(() => {
-    dispatch(setUser(user));
-  }, [dispatch, user]);
+    dispatch(fetchCurrentUser());
+  }, [dispatch]);
 
   return (
     <div className="min-h-screen bg-background ">

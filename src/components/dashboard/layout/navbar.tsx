@@ -9,7 +9,7 @@ type NavbarProps = {
 };
 
 export function Navbar({ onOpenMenu }: NavbarProps) {
-  const user = useAppSelector((state) => state.user.user);
+  const { user } = useAppSelector((state) => state.user);
 
   const userName = user?.user_metadata?.name;
   const jobTitle = user?.user_metadata?.department;

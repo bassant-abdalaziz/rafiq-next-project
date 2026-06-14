@@ -37,13 +37,13 @@ export function Sidebar({
   const handleLogout = async () => {
     try {
       const response = await logOut();
-
-      if (response.ok && response.status === 200) {
+      if (response.ok && response.status === 204) {
         dispatch(clearUser());
 
         router.replace("/login");
       }
     } catch (error) {
+
       const message = getErrorMessage(error);
       toast.error(message);
     }
