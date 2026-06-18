@@ -11,11 +11,24 @@ export async function createProject(data: ProjectPayload) {
   });
 }
 
-export async function getProjects() {
-  const response = await apiFetch<Project[]>("/rest/v1/rpc/get_projects", {
-    method: "GET",
-    requiresAuth: true,
-  });
+export async function getProjects(limit: number, offset: number) {
+  const response = await apiFetch<Project[]>(
+    `/rest/v1/rpc/get_projects?limit=${limit}&offset=${offset}`,
+    {
+      method: "GET",
+      requiresAuth: true,
+      headers: {
+        Prefer: "count=exact",
+      },
+    }
+  );
 
-  return response.data;
+  const contentRange = response.headers.get("content-range");
+
+  const totalCount = contentRange ? Number(contentRange.split("/")[1]) : 0;
+
+  return {
+    projects: response.data,
+    totalCount,
+  };
 }

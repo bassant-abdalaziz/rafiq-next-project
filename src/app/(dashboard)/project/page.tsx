@@ -1,4 +1,5 @@
-import { getProjects } from "@/actions/project";
+"use client";
+
 import { ProjectsState } from "@/components/dashboard/ui/projects-state";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
@@ -8,11 +9,51 @@ import AddProjectIcon from "@/assets/icons/plus.svg";
 import { SectionHeader } from "@/components/dashboard/ui/section-header";
 import { ProjectCard } from "@/components/dashboard/ui/project-card";
 import { Pagination } from "@/components/dashboard/ui/pagination";
+import { useEffect } from "react";
+import { ProjectsSkeleton } from "@/components/dashboard/ui/projects-skeleton";
+import RetryIcon from "@/assets/icons/error.svg";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { fetchAllProjects, setCurrentPage } from "@/redux/slices/projectsSlice";
 
-export default async function ProjectsPage() {
-  const projects = await getProjects();
+export default function ProjectsPage() {
+  const dispatch = useAppDispatch();
 
-  if (!projects.length) {
+  const { projects, totalCount, isLoading, error, currentPage, hasFetched } = useAppSelector(
+    (state) => state.projects
+  );
+
+  const limit = 10;
+  const offset = (currentPage - 1) * limit;
+
+  useEffect(() => {
+    dispatch(fetchAllProjects({ limit, offset }));
+  }, [dispatch, offset]);
+
+  if (isLoading) {
+    return <ProjectsSkeleton />;
+  }
+
+  if (error) {
+    return (
+      <ProjectsState
+        icon={<RetryIcon />}
+        title="Something went wrong"
+        description="We're having trouble retrieving your projects right now. Please try again in a moment."
+        btn={
+          <Button
+            type="button"
+            variant="primary"
+            className="px-6"
+            onClick={() => dispatch(fetchAllProjects({ limit, offset }))}
+          >
+            Retry Connection
+          </Button>
+        }
+      />
+    );
+  }
+
+  if (hasFetched && !projects.length) {
     return (
       <ProjectsState
         icon={<Image src="/imags/empty-project.png" alt="empty-project" width={200} height={200} />}
@@ -33,6 +74,10 @@ export default async function ProjectsPage() {
       />
     );
   }
+
+  const handlePage = (page: number) => {
+    dispatch(setCurrentPage(page));
+  };
 
   return (
     <div className="w-full">
@@ -57,7 +102,13 @@ export default async function ProjectsPage() {
         ))}
       </div>
 
-      <Pagination total={24} visibleCount={projects.length} />
+      <Pagination
+        total={totalCount}
+        visibleCount={projects.length}
+        page={currentPage}
+        limit={limit}
+        handlePage={handlePage}
+      />
 
       <Link
         href="/project/add"
