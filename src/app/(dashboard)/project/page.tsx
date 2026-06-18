@@ -9,7 +9,7 @@ import AddProjectIcon from "@/assets/icons/plus.svg";
 import { SectionHeader } from "@/components/dashboard/ui/section-header";
 import { ProjectCard } from "@/components/dashboard/ui/project-card";
 import { Pagination } from "@/components/dashboard/ui/pagination";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { ProjectsSkeleton } from "@/components/dashboard/ui/projects-skeleton";
 import RetryIcon from "@/assets/icons/error.svg";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
@@ -18,22 +18,71 @@ import { fetchAllProjects, setCurrentPage } from "@/redux/slices/projectsSlice";
 export default function ProjectsPage() {
   const dispatch = useAppDispatch();
 
-  const { projects, totalCount, isLoading, error, currentPage, hasFetched } = useAppSelector(
-    (state) => state.projects
-  );
+  const {
+    projects,
+    totalCount,
+    isLoading,
+    isLoadingMore,
+    error,
+    loadMoreError,
+    currentPage,
+    hasFetched,
+  } = useAppSelector((state) => state.projects);
 
   const limit = 10;
   const offset = (currentPage - 1) * limit;
 
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+  //fetch projects on desktop
   useEffect(() => {
-    dispatch(fetchAllProjects({ limit, offset }));
+    dispatch(fetchAllProjects({ limit, offset, mode: "replace" }));
   }, [dispatch, offset]);
 
-  if (isLoading) {
+  //to apply infinite scroll by using IntersectionObserver >>> only on mobile
+  useEffect(() => {
+    const element = loadMoreRef.current;
+
+    if (!element) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const firstEntry = entries[0];
+
+        if (firstEntry.isIntersecting) {
+          dispatch(
+            fetchAllProjects({
+              limit,
+              offset: projects.length,
+              mode: "append",
+            })
+          );
+        }
+      },
+      {
+        root: null,
+        rootMargin: "200px",
+        threshold: 0,
+      }
+    );
+
+    observer.observe(element);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [dispatch, projects.length]);
+
+  const handlePage = (page: number) => {
+    dispatch(setCurrentPage(page));
+  };
+
+  // desktop loading
+  if (!hasFetched || isLoading) {
     return <ProjectsSkeleton />;
   }
 
-  if (error) {
+  if (error || loadMoreError) {
     return (
       <ProjectsState
         icon={<RetryIcon />}
@@ -44,7 +93,7 @@ export default function ProjectsPage() {
             type="button"
             variant="primary"
             className="px-6"
-            onClick={() => dispatch(fetchAllProjects({ limit, offset }))}
+            onClick={() => dispatch(fetchAllProjects({ limit, offset, mode: "replace" }))}
           >
             Retry Connection
           </Button>
@@ -53,6 +102,7 @@ export default function ProjectsPage() {
     );
   }
 
+  //if list of projects empty
   if (hasFetched && !projects.length) {
     return (
       <ProjectsState
@@ -74,10 +124,6 @@ export default function ProjectsPage() {
       />
     );
   }
-
-  const handlePage = (page: number) => {
-    dispatch(setCurrentPage(page));
-  };
 
   return (
     <div className="w-full">
@@ -101,6 +147,13 @@ export default function ProjectsPage() {
           <ProjectCard key={project.id} project={project} />
         ))}
       </div>
+
+      <div ref={loadMoreRef} className="h-10 md:hidden" />
+
+      {/* mobile loading */}
+      {isLoadingMore && (
+        <p className="mt-2 text-center text-sm text-slate md:hidden font-bold">...</p>
+      )}
 
       <Pagination
         total={totalCount}

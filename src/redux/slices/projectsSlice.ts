@@ -6,6 +6,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 type FetchProjectsArgs = {
   limit: number;
   offset: number;
+  mode?: "append" | "replace";
 };
 
 type FetchProjectsResponse = {
@@ -17,7 +18,9 @@ type ProjectsState = {
   projects: Project[];
   totalCount: number;
   isLoading: boolean;
+  isLoadingMore: boolean;
   error: string | null;
+  loadMoreError: string | null;
   currentPage: number;
   hasFetched: boolean;
 };
@@ -26,7 +29,9 @@ const initialState: ProjectsState = {
   projects: [],
   totalCount: 0,
   isLoading: false,
+  isLoadingMore: false,
   error: null,
+  loadMoreError: null,
   currentPage: 1,
   hasFetched: false,
 };
@@ -56,24 +61,50 @@ const projectsSlice = createSlice({
 
   extraReducers: (builder) => {
     builder
-      .addCase(fetchAllProjects.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
+      .addCase(fetchAllProjects.pending, (state, action) => {
+        const mode = action.meta.arg.mode ?? "replace";
+
+        if (mode === "append") {
+          state.isLoadingMore = true;
+          state.loadMoreError = null;
+        } else {
+          state.isLoading = true;
+          state.error = null;
+        }
       })
 
       .addCase(fetchAllProjects.fulfilled, (state, action) => {
+        const mode = action.meta.arg.mode ?? "replace";
+
         state.isLoading = false;
-        state.projects = action.payload.projects;
-        state.totalCount = action.payload.totalCount;
+        state.isLoadingMore = false;
         state.error = null;
+        state.loadMoreError = null;
         state.hasFetched = true;
+        state.totalCount = action.payload.totalCount;
+
+        if (mode === "append") {
+          state.projects = [...state.projects, ...action.payload.projects];
+        } else {
+          state.projects = action.payload.projects;
+        }
       })
 
       .addCase(fetchAllProjects.rejected, (state, action) => {
-        state.isLoading = false;
-        state.projects = [];
-        state.totalCount = 0;
-        state.error = action.payload ?? "Failed to load projects";
+        const mode = action.meta.arg.mode ?? "replace";
+
+       
+
+        if (mode === "append") {
+          state.isLoadingMore = false;
+          state.loadMoreError = action.payload ?? "Failed to load more projects";
+        } else {
+          state.isLoading = false;
+          state.projects = [];
+          state.totalCount = 0;
+          state.error = action.payload ?? "Failed to load projects";
+          state.hasFetched = true;
+        }
       });
   },
 });
