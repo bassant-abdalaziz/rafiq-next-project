@@ -1,4 +1,4 @@
-import { getProjects } from "@/actions/project";
+import { getProjectByID, getProjects } from "@/actions/project";
 import { Project } from "@/types/project";
 import { getErrorMessage } from "@/utils/helpers";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
@@ -14,6 +14,14 @@ type FetchProjectsResponse = {
   totalCount: number;
 };
 
+type FetchProjectArgs = {
+  projectId: string;
+};
+
+type FetchProjectResponse = {
+  project: Project;
+};
+
 type ProjectsState = {
   projects: Project[];
   totalCount: number;
@@ -23,6 +31,9 @@ type ProjectsState = {
   loadMoreError: string | null;
   currentPage: number;
   hasFetched: boolean;
+  project: Project | null;
+  projectLoading: boolean;
+  projectError: string | null;
 };
 
 const initialState: ProjectsState = {
@@ -34,6 +45,9 @@ const initialState: ProjectsState = {
   loadMoreError: null,
   currentPage: 1,
   hasFetched: false,
+  project: null,
+  projectLoading: false,
+  projectError: null,
 };
 
 export const fetchAllProjects = createAsyncThunk<
@@ -45,6 +59,22 @@ export const fetchAllProjects = createAsyncThunk<
     const response = await getProjects(limit, offset);
 
     return response;
+  } catch (error) {
+    return rejectWithValue(getErrorMessage(error));
+  }
+});
+
+export const fetchProjectByID = createAsyncThunk<
+  FetchProjectResponse,
+  FetchProjectArgs,
+  { rejectValue: string }
+>("projects/fetchProjectByID", async ({ projectId }, { rejectWithValue }) => {
+  try {
+    const response = await getProjectByID(projectId);
+
+    return {
+      project: response.data,
+    };
   } catch (error) {
     return rejectWithValue(getErrorMessage(error));
   }
@@ -93,8 +123,6 @@ const projectsSlice = createSlice({
       .addCase(fetchAllProjects.rejected, (state, action) => {
         const mode = action.meta.arg.mode ?? "replace";
 
-       
-
         if (mode === "append") {
           state.isLoadingMore = false;
           state.loadMoreError = action.payload ?? "Failed to load more projects";
@@ -105,6 +133,22 @@ const projectsSlice = createSlice({
           state.error = action.payload ?? "Failed to load projects";
           state.hasFetched = true;
         }
+      })
+      .addCase(fetchProjectByID.pending, (state, action) => {
+        state.projectLoading = true;
+        state.projectError = null;
+      })
+
+      .addCase(fetchProjectByID.fulfilled, (state, action) => {
+        state.projectLoading = false;
+        state.projectError = null;
+        state.project = action.payload.project;
+      })
+
+      .addCase(fetchProjectByID.rejected, (state, action) => {
+        state.projectLoading = false;
+        state.project = null;
+        state.projectError = action.payload ?? "Failed to load project";
       });
   },
 });

@@ -11,6 +11,30 @@ export async function createProject(data: ProjectPayload) {
   });
 }
 
+export async function updateProject(
+  projectId: string,
+  projectData: {
+    name: string;
+    description?: string;
+  }
+) {
+  const response = await apiFetch<Project[]>(`/rest/v1/projects?id=eq.${projectId}`, {
+    method: "PATCH",
+    requiresAuth: true,
+
+    body: JSON.stringify({
+      name: projectData.name,
+      description: projectData.description,
+    }),
+  });
+
+  return {
+    ok: response.ok,
+    status: response.status,
+    data: response.data,
+  };
+}
+
 export async function getProjects(limit: number, offset: number) {
   const response = await apiFetch<Project[]>(
     `/rest/v1/rpc/get_projects?limit=${limit}&offset=${offset}`,
@@ -30,6 +54,17 @@ export async function getProjects(limit: number, offset: number) {
   return {
     projects: response.data,
     totalCount,
+  };
+}
+
+export async function getProjectByID(projectId: string) {
+  const response = await apiFetch<Project[]>(`/rest/v1/rpc/get_projects?id=eq.${projectId}`, {
+    method: "GET",
+    requiresAuth: true,
+  });
+
+  return {
+    data: response.data[0],
   };
 }
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -7,11 +8,19 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input, Textarea } from "@/components/ui/input";
-import { createProject } from "@/actions/project";
+import { createProject, updateProject } from "@/actions/project";
 import { getErrorMessage } from "@/utils/helpers";
 import { ProjectSchema, type ProjectFormValues } from "@/schemas/project";
+import type { Project } from "@/types/project";
 
-export function ProjectForm() {
+type ProjectFormProps = {
+  type: "add" | "edit";
+  project?: Project | null;
+};
+
+export function ProjectForm({ type, project }: ProjectFormProps) {
+  const isEditMode = type === "edit";
+
   const {
     register,
     handleSubmit,
@@ -27,10 +36,39 @@ export function ProjectForm() {
     },
   });
 
+  useEffect(() => {
+    if (!isEditMode || !project) return;
+
+    reset({
+      name: project.name ?? "",
+      description: project.description ?? "",
+    });
+  }, [isEditMode, project, reset]);
+
   const description = watch("description") || "";
 
   const onSubmit = async (data: ProjectFormValues) => {
     try {
+      if (isEditMode) {
+        if (!project?.id) {
+          toast.error("Project data is not available");
+          return;
+        }
+
+        const projectData = {
+          name: data.name,
+          description: data.description,
+        };
+
+        const response = await updateProject(project.id, projectData);
+
+        if (response.ok && response.status === 204) {
+          toast.success("Project is updated successfully");
+        }
+
+        return;
+      }
+
       const response = await createProject({
         name: data.name,
         description: data.description,
@@ -42,7 +80,10 @@ export function ProjectForm() {
       }
     } catch (error) {
       const message = getErrorMessage(error);
-      toast.error(`Failed to create project: ${message}`);
+
+      toast.error(
+        isEditMode ? `Failed to update project: ${message}` : `Failed to create project: ${message}`
+      );
     }
   };
 
@@ -78,7 +119,7 @@ export function ProjectForm() {
 
         <div className="w-full md:w-44">
           <Button type="submit" variant="primary" fullWidth isLoading={isSubmitting}>
-            Create Project
+            {isEditMode ? "Update Project" : "Create Project"}
           </Button>
         </div>
       </div>
