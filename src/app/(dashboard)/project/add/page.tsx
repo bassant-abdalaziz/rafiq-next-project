@@ -5,6 +5,7 @@ import { ProjectForm } from "@/components/dashboard/forms/project-form";
 import { PageHeader } from "@/components/dashboard/ui/page-header";
 import { SectionHeader } from "@/components/dashboard/ui/section-header";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function AddProjectPage() {
   return (
@@ -15,14 +16,17 @@ export default function AddProjectPage() {
           breadcrumbs={[{ label: "Projects", href: "/project" }, { label: "Add New Project" }]}
         />
 
-        <Button
-          type="button"
-          variant="primary"
-          iconElement={<InviteMemberIcon aria-hidden="true" />}
-          className="px-6"
-        >
-          Invite Member
-        </Button>
+        <Link href="/project/add">
+          {" "}
+          <Button
+            type="button"
+            variant="primary"
+            iconElement={<InviteMemberIcon aria-hidden="true" />}
+            className="px-6"
+          >
+            Invite Member
+          </Button>
+        </Link>
       </div>
 
       <section className="mx-auto w-full max-w-3xl overflow-hidden md:rounded-lg md:bg-white md:shadow-sm mt-8">

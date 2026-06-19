@@ -1,7 +1,7 @@
 "use server";
 
 import { apiFetch } from "@/lib/api";
-import { Project, ProjectPayload } from "@/types/project";
+import { Member, Project, ProjectPayload } from "@/types/project";
 
 export async function createProject(data: ProjectPayload) {
   return apiFetch("/rest/v1/projects", {
@@ -30,5 +30,19 @@ export async function getProjects(limit: number, offset: number) {
   return {
     projects: response.data,
     totalCount,
+  };
+}
+
+export async function getProjectMembers(projectId: string) {
+  const response = await apiFetch<Member[]>(
+    `/rest/v1/get_project_members?project_id=eq.${projectId}`,
+    {
+      method: "GET",
+      requiresAuth: true,
+    }
+  );
+
+  return {
+    data: response.data,
   };
 }

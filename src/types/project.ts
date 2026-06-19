@@ -9,3 +9,13 @@ export type Project = {
   description: string | null;
   created_at: string;
 };
+
+export type Member = {
+  member_id: string;
+  role: string;
+  metadata: {
+    name: string;
+    email: string;
+    department?: string | null;
+  };
+};
