@@ -12,10 +12,19 @@ export type Project = {
 
 export type Member = {
   member_id: string;
+  user_id: string;
   role: string;
   metadata: {
     name: string;
     email: string;
     department?: string | null;
   };
+};
+
+export type CreateEpicPayload = {
+  title: string;
+  description?: string | null;
+  assignee_id?: string | null;
+  project_id: string;
+  deadline?: string | null;
 };

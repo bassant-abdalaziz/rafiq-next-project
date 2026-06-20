@@ -1,3 +1,8 @@
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+
+import AddProjectIcon from "@/assets/icons/plus.svg";
+
 type ProjectEpicsPageProps = {
   params: Promise<{
     projectId: string;
@@ -9,8 +14,16 @@ export default async function ProjectEpicsPage({ params }: ProjectEpicsPageProps
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-navy">Project Epics</h1>
-      <p className="mt-2 text-slate">Project ID: {projectId}</p>
+      <Link href={`/project/${projectId}/epics/new`}>
+        <Button
+          type="button"
+          variant="primary"
+          iconElement={<AddProjectIcon aria-hidden="true" />}
+          className="px-6"
+        >
+          New Epic
+        </Button>
+      </Link>
     </div>
   );
 }

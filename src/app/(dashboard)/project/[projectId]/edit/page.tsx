@@ -13,7 +13,7 @@ export default function ProjectEditPage() {
 
   const dispatch = useAppDispatch();
 
-  const { project, projectLoading, projectError } = useAppSelector((state) => state.projects);
+  const { project } = useAppSelector((state) => state.projects);
 
   useEffect(() => {
     if (!projectId) return;

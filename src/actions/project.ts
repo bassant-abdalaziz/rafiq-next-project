@@ -1,8 +1,9 @@
 "use server";
 
 import { apiFetch } from "@/lib/api";
-import { Member, Project, ProjectPayload } from "@/types/project";
+import { CreateEpicPayload, Member, Project, ProjectPayload } from "@/types/project";
 
+//Create Project
 export async function createProject(data: ProjectPayload) {
   return apiFetch("/rest/v1/projects", {
     method: "POST",
@@ -11,6 +12,7 @@ export async function createProject(data: ProjectPayload) {
   });
 }
 
+//Update Project
 export async function updateProject(
   projectId: string,
   projectData: {
@@ -35,6 +37,7 @@ export async function updateProject(
   };
 }
 
+//Get All Projects
 export async function getProjects(limit: number, offset: number) {
   const response = await apiFetch<Project[]>(
     `/rest/v1/rpc/get_projects?limit=${limit}&offset=${offset}`,
@@ -56,7 +59,7 @@ export async function getProjects(limit: number, offset: number) {
     totalCount,
   };
 }
-
+//Get Project By ID
 export async function getProjectByID(projectId: string) {
   const response = await apiFetch<Project[]>(`/rest/v1/rpc/get_projects?id=eq.${projectId}`, {
     method: "GET",
@@ -67,7 +70,7 @@ export async function getProjectByID(projectId: string) {
     data: response.data[0],
   };
 }
-
+//Get All Members Of Project 
 export async function getProjectMembers(projectId: string) {
   const response = await apiFetch<Member[]>(
     `/rest/v1/get_project_members?project_id=eq.${projectId}`,
@@ -78,6 +81,21 @@ export async function getProjectMembers(projectId: string) {
   );
 
   return {
+    data: response.data,
+  };
+}
+
+//Create Epic
+export async function createEpic(data: CreateEpicPayload) {
+  const response = await apiFetch("/rest/v1/epics", {
+    method: "POST",
+    requiresAuth: true,
+    body: JSON.stringify(data),
+  });
+
+  return {
+    ok: response.ok,
+    status: response.status,
     data: response.data,
   };
 }
