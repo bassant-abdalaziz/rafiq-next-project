@@ -18,30 +18,35 @@ async function refreshAccessTokenInProxy(request: NextRequest) {
     return null;
   }
 
-  const response = await fetch(`${baseUrl}/auth/v1/token?grant_type=refresh_token`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      apikey: apiKey,
-    },
-    body: JSON.stringify({
-      refresh_token: refreshToken,
-    }),
-    cache: "no-store",
-  });
+  try {
+    const response = await fetch(`${baseUrl}/auth/v1/token?grant_type=refresh_token`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: apiKey,
+      },
+      body: JSON.stringify({
+        refresh_token: refreshToken,
+      }),
+      cache: "no-store",
+    });
 
-  const data = (await response.json().catch(() => null)) as LoginResponse | null;
+    const data = (await response.json().catch(() => null)) as LoginResponse | null;
 
-  if (!response.ok || !data?.access_token) {
+    if (!response.ok || !data?.access_token) {
+      return null;
+    }
+
+    return {
+      accessToken: data.access_token,
+      refreshToken: data.refresh_token,
+      expiresIn: data.expires_in,
+      rememberMe,
+    };
+  } catch (error) {
+    console.error("Failed to refresh access token in proxy:", error);
     return null;
   }
-
-  return {
-    accessToken: data.access_token,
-    refreshToken: data.refresh_token,
-    expiresIn: data.expires_in,
-    rememberMe,
-  };
 }
 
 function setAuthCookies(
@@ -84,7 +89,7 @@ export async function proxy(request: NextRequest) {
   const accessToken = request.cookies.get("access_token")?.value;
   const pathname = request.nextUrl.pathname;
 
-  const authPages = ["/login", "/sign-up", "/forgot-password","/reset-password"];
+  const authPages = ["/login", "/sign-up", "/forgot-password", "/reset-password"];
 
   const isHomePage = pathname === "/";
   const isAuthPage = authPages.includes(pathname);
@@ -170,5 +175,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/project/:path*", "/login", "/sign-up", "/forgot-password","/reset-password"],
+  matcher: ["/", "/project/:path*", "/login", "/sign-up", "/forgot-password", "/reset-password"],
 };
