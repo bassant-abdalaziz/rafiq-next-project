@@ -29,7 +29,6 @@ type ProjectsState = {
   isLoadingMore: boolean;
   error: string | null;
   loadMoreError: string | null;
-  currentPage: number;
   hasFetched: boolean;
   project: Project | null;
   projectLoading: boolean;
@@ -43,7 +42,6 @@ const initialState: ProjectsState = {
   isLoadingMore: false,
   error: null,
   loadMoreError: null,
-  currentPage: 1,
   hasFetched: false,
   project: null,
   projectLoading: false,
@@ -83,11 +81,7 @@ export const fetchProjectByID = createAsyncThunk<
 const projectsSlice = createSlice({
   name: "projects",
   initialState,
-  reducers: {
-    setCurrentPage: (state, action) => {
-      state.currentPage = action.payload;
-    },
-  },
+  reducers: {},
 
   extraReducers: (builder) => {
     builder
@@ -152,7 +146,5 @@ const projectsSlice = createSlice({
       });
   },
 });
-
-export const { setCurrentPage } = projectsSlice.actions;
 
 export default projectsSlice.reducer;

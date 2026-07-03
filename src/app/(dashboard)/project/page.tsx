@@ -13,37 +13,69 @@ import { useEffect, useRef } from "react";
 import { ProjectsSkeleton } from "@/components/dashboard/ui/projects-skeleton";
 import RetryIcon from "@/assets/icons/error.svg";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { fetchAllProjects, setCurrentPage } from "@/redux/slices/projectsSlice";
+import { fetchAllProjects } from "@/redux/slices/projectsSlice";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { getOffset } from "@/utils/helpers";
+
+const PROJECTS_LIMIT = 10;
 
 export default function ProjectsPage() {
   const dispatch = useAppDispatch();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  const {
-    projects,
-    totalCount,
-    isLoading,
-    isLoadingMore,
-    error,
-    loadMoreError,
-    currentPage,
-    hasFetched,
-  } = useAppSelector((state) => state.projects);
-
-  const limit = 10;
-  const offset = (currentPage - 1) * limit;
+  const { projects, totalCount, isLoading, isLoadingMore, error, loadMoreError, hasFetched } =
+    useAppSelector((state) => state.projects);
 
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
-  //fetch projects on desktop
-  useEffect(() => {
-    dispatch(fetchAllProjects({ limit, offset, mode: "replace" }));
-  }, [dispatch, offset]);
+  // Get page number from URL params
+  const pageFromUrl = Number(searchParams.get("page") || 1);
 
-  //to apply infinite scroll by using IntersectionObserver >>> only on mobile
+  const page = Number.isInteger(pageFromUrl) && pageFromUrl > 0 ? pageFromUrl : 1;
+
+  const currentOffset = getOffset(page, PROJECTS_LIMIT);
+
+  const loadedUntil = currentOffset + projects.length;
+  const hasMore = loadedUntil < totalCount;
+
+  // Fetch projects on initial load and whenever page changes from URL
+  useEffect(() => {
+    const offset = getOffset(page, PROJECTS_LIMIT);
+
+    dispatch(
+      fetchAllProjects({
+        limit: PROJECTS_LIMIT,
+        offset,
+        mode: "replace",
+      })
+    );
+  }, [dispatch, page]);
+
+  const handleRetry = () => {
+    dispatch(
+      fetchAllProjects({
+        limit: PROJECTS_LIMIT,
+        offset: getOffset(page, PROJECTS_LIMIT),
+        mode: "replace",
+      })
+    );
+  };
+
+  // Apply infinite scroll by using IntersectionObserver >>> only on mobile
   useEffect(() => {
     const element = loadMoreRef.current;
 
     if (!element) return;
+    if (!hasFetched) return;
+    if (isLoading || isLoadingMore) return;
+    if (error || loadMoreError) return;
+    if (!hasMore) return;
+
+    const isMobile = window.matchMedia("(max-width: 767px)").matches;
+
+    if (!isMobile) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -52,18 +84,14 @@ export default function ProjectsPage() {
         if (firstEntry.isIntersecting) {
           dispatch(
             fetchAllProjects({
-              limit,
-              offset: projects.length,
+              limit: PROJECTS_LIMIT,
+              offset: loadedUntil,
               mode: "append",
             })
           );
         }
       },
-      {
-        root: null,
-        rootMargin: "200px",
-        threshold: 0,
-      }
+      { root: null, rootMargin: "200px", threshold: 0 }
     );
 
     observer.observe(element);
@@ -71,11 +99,7 @@ export default function ProjectsPage() {
     return () => {
       observer.disconnect();
     };
-  }, [dispatch, projects.length]);
-
-  const handlePage = (page: number) => {
-    dispatch(setCurrentPage(page));
-  };
+  }, [dispatch, hasFetched, isLoading, isLoadingMore, error, loadMoreError, hasMore, loadedUntil]);
 
   // desktop loading
   if (!hasFetched || isLoading) {
@@ -89,12 +113,7 @@ export default function ProjectsPage() {
         title="Something went wrong"
         description="We're having trouble retrieving your projects right now. Please try again in a moment."
         btn={
-          <Button
-            type="button"
-            variant="primary"
-            className="px-6"
-            onClick={() => dispatch(fetchAllProjects({ limit, offset, mode: "replace" }))}
-          >
+          <Button type="button" variant="primary" className="px-6" onClick={handleRetry}>
             Retry Connection
           </Button>
         }
@@ -149,18 +168,18 @@ export default function ProjectsPage() {
       </div>
 
       <div ref={loadMoreRef} className="h-10 md:hidden" />
-
       {/* mobile loading */}
       {isLoadingMore && (
-        <p className="mt-2 text-center text-sm text-slate md:hidden font-bold">...</p>
+        <p className="mt-2 text-center text-sm font-bold text-slate md:hidden">...</p>
       )}
 
       <Pagination
         total={totalCount}
         visibleCount={projects.length}
-        page={currentPage}
-        limit={limit}
-        handlePage={handlePage}
+        page={page}
+        limit={PROJECTS_LIMIT}
+        pathname={pathname}
+        searchParamsString={searchParams.toString()}
       />
 
       <Link

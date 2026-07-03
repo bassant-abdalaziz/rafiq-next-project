@@ -20,15 +20,19 @@ export default function ProjectMembersPage() {
 
   const dispatch = useAppDispatch();
 
-  const { projectMembers, isLoading, error, hasFetched } = useAppSelector(
+  const { hasFetched, fetchedProjectId, projectMembers, isLoading, error } = useAppSelector(
     (state) => state.projectMembers
   );
 
   useEffect(() => {
     if (!projectId) return;
-    dispatch(fetchAllProjectMembers({ projectId }));
-  }, [dispatch, projectId]);
 
+    const shouldFetch = !hasFetched || fetchedProjectId !== projectId;
+
+    if (shouldFetch) {
+      dispatch(fetchAllProjectMembers({ projectId }));
+    }
+  }, [dispatch, projectId, hasFetched, fetchedProjectId]);
   if (!hasFetched || isLoading) {
     return <ProjectMembersSkeleton />;
   }

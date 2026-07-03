@@ -1,6 +1,5 @@
 "use client";
 import { EpicFormLayout } from "@/components/dashboard/ui/epic-form-layout";
-import { getProjectMembers } from "@/actions/project";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
@@ -11,12 +10,20 @@ export default function CreateEpicPage() {
   const params = useParams<{ projectId: string }>();
   const projectId = params.projectId;
   const dispatch = useAppDispatch();
-  const { projectMembers } = useAppSelector((state) => state.projectMembers);
+
+  const { hasFetched, fetchedProjectId, projectMembers } = useAppSelector(
+    (state) => state.projectMembers
+  );
 
   useEffect(() => {
     if (!projectId) return;
-    dispatch(fetchAllProjectMembers({ projectId }));
-  }, [dispatch, projectId]);
+
+    const shouldFetch = !hasFetched || fetchedProjectId !== projectId;
+
+    if (shouldFetch) {
+      dispatch(fetchAllProjectMembers({ projectId }));
+    }
+  }, [dispatch, projectId, hasFetched, fetchedProjectId]);
 
   return (
     <EpicFormLayout

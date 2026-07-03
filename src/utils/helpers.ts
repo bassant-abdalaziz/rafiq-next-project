@@ -22,7 +22,6 @@ export function getAvatarInitials(name?: string) {
   return name.slice(0, 2).toUpperCase();
 }
 
-
 export function formatProjectDate(date: string) {
   return new Intl.DateTimeFormat("en-GB", {
     day: "2-digit",
@@ -55,3 +54,7 @@ export function getProjectIdFromPathname(pathname: string) {
 
   return projectId;
 }
+
+export const getOffset = (page: number, limit: number) => {
+  return (page - 1) * limit;
+};
