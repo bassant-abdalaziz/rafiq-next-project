@@ -51,7 +51,7 @@ export const TaskStatusSchema = z.enum([
 
 export const TaskSchema = z.object({
   title: z.string().trim().min(1, "Title is required"),
-  status: TaskStatusSchema.default("TO_DO"),
+  status: TaskStatusSchema,
   epic_id: z.string().optional(),
   assignee_id: z.string().optional(),
   due_date: z.string().optional(),
