@@ -46,3 +46,10 @@ export type ProjectEpic = {
   created_by: EpicUser | null;
   assignee: EpicUser | null;
 };
+
+export type UpdateEpicPayload = {
+  title?: string;
+  description?: string | null;
+  assignee_id?: string | null;
+  deadline?: string | null;
+};

@@ -1,7 +1,14 @@
 "use server";
 
 import { apiFetch } from "@/lib/api";
-import { CreateEpicPayload, Member, Project, ProjectEpic, ProjectPayload } from "@/types/project";
+import {
+  CreateEpicPayload,
+  Member,
+  Project,
+  ProjectEpic,
+  ProjectPayload,
+  UpdateEpicPayload,
+} from "@/types/project";
 
 //Create Project
 export async function createProject(data: ProjectPayload) {
@@ -121,4 +128,33 @@ export async function getProjectEpics(projectId: string, limit: number, offset: 
     projectEpics: response.data,
     totalCount,
   };
+}
+
+// Get Project Epic By ID
+export async function getProjectEpicByID(projectId: string, epicId: string) {
+  const response = await apiFetch<ProjectEpic[]>(
+    `/rest/v1/project_epics?project_id=eq.${projectId}&id=eq.${epicId}`,
+    {
+      method: "GET",
+      requiresAuth: true,
+    }
+  );
+
+  const epic = response.data[0];
+
+  if (!epic) {
+    throw new Error("Epic not found");
+  }
+
+  return epic;
+}
+
+export async function updateEpic(projectId: string, epicId: string, payload: UpdateEpicPayload) {
+  await apiFetch(`/rest/v1/epics?id=eq.${epicId}`, {
+    method: "PATCH",
+    requiresAuth: true,
+    body: JSON.stringify(payload),
+  });
+
+  return getProjectEpicByID(projectId, epicId);
 }
