@@ -1,7 +1,7 @@
 "use server";
 
 import { apiFetch } from "@/lib/api";
-import { CreateEpicPayload, Member, Project, ProjectPayload } from "@/types/project";
+import { CreateEpicPayload, Member, Project, ProjectEpic, ProjectPayload } from "@/types/project";
 
 //Create Project
 export async function createProject(data: ProjectPayload) {
@@ -70,7 +70,7 @@ export async function getProjectByID(projectId: string) {
     data: response.data[0],
   };
 }
-//Get All Members Of Project 
+//Get All Members Of Project
 export async function getProjectMembers(projectId: string) {
   const response = await apiFetch<Member[]>(
     `/rest/v1/get_project_members?project_id=eq.${projectId}`,
@@ -97,5 +97,28 @@ export async function createEpic(data: CreateEpicPayload) {
     ok: response.ok,
     status: response.status,
     data: response.data,
+  };
+}
+
+// Get Project Epics
+export async function getProjectEpics(projectId: string, limit: number, offset: number) {
+  const response = await apiFetch<ProjectEpic[]>(
+    `/rest/v1/project_epics?project_id=eq.${projectId}&limit=${limit}&offset=${offset}`,
+    {
+      method: "GET",
+      requiresAuth: true,
+      headers: {
+        Prefer: "count=exact",
+      },
+    }
+  );
+
+  const contentRange = response.headers.get("content-range");
+
+  const totalCount = contentRange ? Number(contentRange.split("/")[1]) : 0;
+
+  return {
+    projectEpics: response.data,
+    totalCount,
   };
 }

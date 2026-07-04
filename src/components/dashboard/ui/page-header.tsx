@@ -1,7 +1,7 @@
 import { Breadcrumbs } from "./breadcrumbs";
 
 type BreadcrumbItem = {
-  label: string;
+  label: string ;
   href?: string;
 };
 

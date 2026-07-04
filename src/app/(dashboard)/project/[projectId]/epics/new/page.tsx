@@ -5,32 +5,37 @@ import { useParams } from "next/navigation";
 import { useEffect } from "react";
 import { fetchAllProjectMembers } from "@/redux/slices/projectMembersSlice";
 import { EpicForm } from "@/components/dashboard/forms/epic-form";
+import { fetchProjectByID } from "@/redux/slices/projectsSlice";
 
 export default function CreateEpicPage() {
   const params = useParams<{ projectId: string }>();
   const projectId = params.projectId;
   const dispatch = useAppDispatch();
+  const { projectMembers } = useAppSelector((state) => state.projectMembers);
 
-  const { hasFetched, fetchedProjectId, projectMembers } = useAppSelector(
-    (state) => state.projectMembers
-  );
+  const { isProjectFetched, fetchedProjectId, project } = useAppSelector((state) => state.projects);
 
   useEffect(() => {
     if (!projectId) return;
 
-    const shouldFetch = !hasFetched || fetchedProjectId !== projectId;
+    const shouldFetchProject = !isProjectFetched || fetchedProjectId !== projectId;
 
-    if (shouldFetch) {
-      dispatch(fetchAllProjectMembers({ projectId }));
+    if (shouldFetchProject) {
+      dispatch(fetchProjectByID({ projectId }));
     }
-  }, [dispatch, projectId, hasFetched, fetchedProjectId]);
+  }, [dispatch, projectId, isProjectFetched, fetchedProjectId]);
+
+  useEffect(() => {
+    if (!projectId) return;
+    dispatch(fetchAllProjectMembers({ projectId }));
+  }, [dispatch, projectId]);
 
   return (
     <EpicFormLayout
       pageTitle="Create New Epic"
       breadcrumbs={[
         { label: "Projects", href: "/project" },
-        { label: "Project Alpha" },
+        { label: project?.name ?? "Project" },
         { label: "Epics", href: `/project/${projectId}/epics` },
         { label: "New Epic" },
       ]}

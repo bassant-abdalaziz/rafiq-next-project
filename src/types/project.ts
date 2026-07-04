@@ -28,3 +28,21 @@ export type CreateEpicPayload = {
   project_id: string;
   deadline?: string | null;
 };
+
+export type EpicUser = {
+  sub: string;
+  name: string;
+  email: string;
+  department?: string | null;
+};
+
+export type ProjectEpic = {
+  id: string;
+  epic_id: string;
+  title: string;
+  description?: string | null;
+  deadline?: string | null;
+  created_at: string;
+  created_by: EpicUser | null;
+  assignee: EpicUser | null;
+};

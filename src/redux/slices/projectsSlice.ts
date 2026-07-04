@@ -30,9 +30,12 @@ type ProjectsState = {
   error: string | null;
   loadMoreError: string | null;
   hasFetched: boolean;
+
   project: Project | null;
   projectLoading: boolean;
   projectError: string | null;
+  isProjectFetched: boolean;
+  fetchedProjectId: string | null;
 };
 
 const initialState: ProjectsState = {
@@ -43,9 +46,12 @@ const initialState: ProjectsState = {
   error: null,
   loadMoreError: null,
   hasFetched: false,
+
   project: null,
   projectLoading: false,
   projectError: null,
+  isProjectFetched: false,
+  fetchedProjectId: null,
 };
 
 export const fetchAllProjects = createAsyncThunk<
@@ -128,21 +134,40 @@ const projectsSlice = createSlice({
           state.hasFetched = true;
         }
       })
+
       .addCase(fetchProjectByID.pending, (state, action) => {
         state.projectLoading = true;
         state.projectError = null;
+
+        /**
+         * Clear stale project details when loading a different project,
+         * so the UI does not briefly display details from the previous project.
+         */
+        if (state.fetchedProjectId !== action.meta.arg.projectId) {
+          state.project = null;
+          state.isProjectFetched = false;
+        }
       })
 
       .addCase(fetchProjectByID.fulfilled, (state, action) => {
         state.projectLoading = false;
         state.projectError = null;
         state.project = action.payload.project;
+        state.isProjectFetched = true;
+        state.fetchedProjectId = action.meta.arg.projectId;
       })
 
       .addCase(fetchProjectByID.rejected, (state, action) => {
         state.projectLoading = false;
         state.project = null;
         state.projectError = action.payload ?? "Failed to load project";
+
+        /**
+         * Mark this project request as completed even if it failed,
+         * so the app can show the error state instead of retrying forever.
+         */
+        state.isProjectFetched = true;
+        state.fetchedProjectId = action.meta.arg.projectId;
       });
   },
 });

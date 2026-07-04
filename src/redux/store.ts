@@ -2,6 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import userReducer from "./slices/userSlice";
 import projectsReducer from "./slices/projectsSlice";
 import projectMembersReducer from "./slices/projectMembersSlice";
+import projectEpicsReducer from "./slices/projectEpicsSlice";
 
 export const makeStore = () => {
   return configureStore({
@@ -9,6 +10,7 @@ export const makeStore = () => {
       user: userReducer,
       projects: projectsReducer,
       projectMembers: projectMembersReducer,
+      projectEpics: projectEpicsReducer,
     },
   });
 };

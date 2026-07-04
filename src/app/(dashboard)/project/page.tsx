@@ -14,14 +14,13 @@ import { ProjectsSkeleton } from "@/components/dashboard/ui/projects-skeleton";
 import RetryIcon from "@/assets/icons/error.svg";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { fetchAllProjects } from "@/redux/slices/projectsSlice";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { getOffset } from "@/utils/helpers";
 
 const PROJECTS_LIMIT = 10;
 
 export default function ProjectsPage() {
   const dispatch = useAppDispatch();
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 

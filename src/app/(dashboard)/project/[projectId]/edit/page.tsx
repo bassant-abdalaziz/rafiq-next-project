@@ -13,23 +13,22 @@ export default function ProjectEditPage() {
 
   const dispatch = useAppDispatch();
 
-  const { project } = useAppSelector((state) => state.projects);
+  const { isProjectFetched, fetchedProjectId, project } = useAppSelector((state) => state.projects);
 
   useEffect(() => {
     if (!projectId) return;
 
-    dispatch(fetchProjectByID({ projectId }));
-  }, [dispatch, projectId]);
+    const shouldFetchProject = !isProjectFetched || fetchedProjectId !== projectId;
 
-  
+    if (shouldFetchProject) {
+      dispatch(fetchProjectByID({ projectId }));
+    }
+  }, [dispatch, projectId, isProjectFetched, fetchedProjectId]);
 
   return (
     <ProjectFormLayout
       pageTitle="Edit Project"
-      breadcrumbs={[
-        { label: "Projects", href: "/project" },
-        { label: "Edit Project" },
-      ]}
+      breadcrumbs={[{ label: "Projects", href: "/project" }, { label: "Edit Project" }]}
       sectionTitle="Edit Project"
       sectionDescription="Define the scope and foundational details of your project."
     >

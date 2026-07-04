@@ -28,6 +28,8 @@
 
   /* Semantic Colors */
   --color-success: #82f9be;
+  --color-darker-success: #004E32;
+  --color-light-success: #65DCA4;
   --color-error: #ba1a1a;
   --color-warning: #ffb300;
 

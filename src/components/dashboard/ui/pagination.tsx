@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 
-type ProjectsPaginationProps = {
+type PaginationProps = {
   total: number;
   visibleCount: number;
   page: number;
   limit: number;
   pathname: string;
   searchParamsString?: string;
+  itemLabel?: string;
 };
 
 type PageItem = number | "...";
@@ -57,11 +58,7 @@ function getPaginationItems(currentPage: number, totalPages: number): PageItem[]
   return result;
 }
 
-function createPageHref(
-  pathname: string,
-  searchParamsString: string | undefined,
-  page: number
-) {
+function createPageHref(pathname: string, searchParamsString: string | undefined, page: number) {
   const params = new URLSearchParams(searchParamsString);
 
   params.set("page", String(page));
@@ -76,7 +73,8 @@ export function Pagination({
   limit,
   pathname,
   searchParamsString,
-}: ProjectsPaginationProps) {
+  itemLabel = "active projects",
+}: PaginationProps) {
   const totalPages = Math.ceil(total / limit);
 
   if (totalPages <= 1) return null;
@@ -88,6 +86,8 @@ export function Pagination({
 
   const startItem = (safePage - 1) * limit + 1;
   const endItem = Math.min(startItem + visibleCount - 1, total);
+
+  const summaryText = `Showing ${endItem} of ${total} ${itemLabel}`
 
   const pages = getPaginationItems(safePage, totalPages);
 
@@ -102,11 +102,9 @@ export function Pagination({
 
   return (
     <div className="mt-28 hidden items-center justify-between md:flex">
-      <p className="text-sm text-slate">
-        Showing {startItem}-{endItem} of {total} active projects
-      </p>
+      <p className="text-sm text-slate">{summaryText}</p>
 
-      <nav aria-label="Projects pagination" className="flex items-center gap-2">
+      <nav className="flex items-center gap-2">
         {isFirstPage ? (
           <span className={disabledClass} aria-disabled="true">
             ‹

@@ -1,7 +1,7 @@
 import { getProjectMembers } from "@/actions/project";
 import { Member } from "@/types/project";
 import { getErrorMessage } from "@/utils/helpers";
-import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 type FetchProjectMembersArgs = {
   projectId: string;
