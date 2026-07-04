@@ -3,6 +3,7 @@
 import { apiFetch } from "@/lib/api";
 import {
   CreateEpicPayload,
+  CreateTaskPayload,
   Member,
   Project,
   ProjectEpic,
@@ -157,4 +158,12 @@ export async function updateEpic(projectId: string, epicId: string, payload: Upd
   });
 
   return getProjectEpicByID(projectId, epicId);
+}
+
+export async function createTask(payload: CreateTaskPayload) {
+  return await apiFetch("/rest/v1/tasks", {
+    method: "POST",
+    requiresAuth: true,
+    body: JSON.stringify(payload),
+  });
 }

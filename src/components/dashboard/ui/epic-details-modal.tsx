@@ -11,6 +11,7 @@ import CalendarIcon from "@/assets/icons/calendar.svg";
 import NoTaskIcon from "@/assets/icons/no-task.svg";
 import { toast } from "sonner";
 import { useDebouncedCallback } from "@/hooks/use-debounced";
+import Link from "next/link";
 
 type EpicDetailsModalProps = {
   isOpen: boolean;
@@ -18,6 +19,7 @@ type EpicDetailsModalProps = {
   isLoading: boolean;
   error: string | null;
   projectMembers: Member[];
+  projectId: string;
   onClose: () => void;
   onRetry: () => void;
   onUpdate: (payload: UpdateEpicPayload) => Promise<void>;
@@ -26,6 +28,7 @@ type EpicDetailsModalProps = {
 type EpicDetailsFormProps = {
   epic: ProjectEpic;
   projectMembers: Member[];
+  projectId: string;
   onClose: () => void;
   onUpdate: (payload: UpdateEpicPayload) => Promise<void>;
 };
@@ -41,6 +44,7 @@ export function EpicDetailsModal({
   isLoading,
   error,
   projectMembers,
+  projectId,
   onClose,
   onRetry,
   onUpdate,
@@ -79,6 +83,7 @@ export function EpicDetailsModal({
             key={epic.id}
             epic={epic}
             projectMembers={projectMembers}
+            projectId={projectId}
             onClose={onClose}
             onUpdate={onUpdate}
           />
@@ -89,7 +94,13 @@ export function EpicDetailsModal({
 }
 
 //Epic Edit Form
-function EpicDetailsForm({ epic, projectMembers, onClose, onUpdate }: EpicDetailsFormProps) {
+function EpicDetailsForm({
+  epic,
+  projectMembers,
+  projectId,
+  onClose,
+  onUpdate,
+}: EpicDetailsFormProps) {
   const [title, setTitle] = useState(epic.title ?? "");
   const [description, setDescription] = useState(epic.description ?? "");
   const [deadline, setDeadline] = useState(toDateInputValue(epic.deadline));
@@ -166,6 +177,7 @@ function EpicDetailsForm({ epic, projectMembers, onClose, onUpdate }: EpicDetail
       () => setDeadline(previousValue)
     );
   };
+  const createTaskHref = `/project/${projectId}/tasks/new?epicId=${epic.id}`;
 
   return (
     <>
@@ -267,9 +279,13 @@ function EpicDetailsForm({ epic, projectMembers, onClose, onUpdate }: EpicDetail
           <div className="mb-4 flex items-center justify-between">
             <h3 className="text-lg font-bold text-navy">Tasks</h3>
 
-            <button type="button" className="text-sm font-bold text-primary">
+            <Link
+              href={createTaskHref}
+              onClick={onClose}
+              className="text-sm font-bold text-primary"
+            >
               + Add Task
-            </button>
+            </Link>
           </div>
 
           <div className="flex min-h-48 flex-col items-center justify-center rounded-lg border border-dashed border-[#D8E1F5] bg-[#F4F7FF] p-6 text-center">
@@ -279,9 +295,13 @@ function EpicDetailsForm({ epic, projectMembers, onClose, onUpdate }: EpicDetail
               No tasks have been added to this epic yet
             </p>
 
-            <Button type="button" variant="primary" className="px-6">
-              + Add Task
-            </Button>
+            <Link href={createTaskHref} onClick={onClose}>
+              <Button type="button" variant="primary" className="px-6">
+                + Add Task
+              </Button>
+            </Link>
+
+           
           </div>
         </div>
       </div>

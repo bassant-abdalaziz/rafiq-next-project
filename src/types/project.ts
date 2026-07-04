@@ -53,3 +53,24 @@ export type UpdateEpicPayload = {
   assignee_id?: string | null;
   deadline?: string | null;
 };
+
+export type TaskStatus =
+  | "TO_DO"
+  | "IN_PROGRESS"
+  | "BLOCKED"
+  | "IN_REVIEW"
+  | "READY_FOR_QA"
+  | "REOPENED"
+  | "READY_FOR_PRODUCTION"
+  | "DONE";
+
+export type CreateTaskPayload = {
+  project_id: string;
+  epic_id?: string | null;
+  title: string;
+  description?: string | null;
+  assignee_id?: string | null;
+  due_date?: string | null;
+  status: TaskStatus;
+};
+

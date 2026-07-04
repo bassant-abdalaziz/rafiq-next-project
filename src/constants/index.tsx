@@ -111,3 +111,15 @@ export function getProjectIdFromPathname(pathname: string) {
 
   return projectId;
 }
+
+
+export const TASK_STATUS_OPTIONS = [
+  "TO_DO",
+  "IN_PROGRESS",
+  "BLOCKED",
+  "IN_REVIEW",
+  "READY_FOR_QA",
+  "REOPENED",
+  "READY_FOR_PRODUCTION",
+  "DONE",
+] as const;

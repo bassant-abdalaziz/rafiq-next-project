@@ -30,8 +30,6 @@ import { getOffset } from "@/utils/helpers";
 import { UpdateEpicPayload } from "@/types/project";
 import { LoadingDots } from "@/components/dashboard/ui/loading-dots";
 
-
-
 const PROJECT_EPICS_LIMIT = 10;
 
 export default function EpicsPageClient() {
@@ -316,6 +314,7 @@ export default function EpicsPageClient() {
         isLoading={selectedEpicLoading}
         error={selectedEpicError}
         projectMembers={projectMembers}
+        projectId={projectId}
         onClose={handleCloseEpicModal}
         onRetry={handleRetryEpicDetails}
         onUpdate={handleUpdateEpic}
