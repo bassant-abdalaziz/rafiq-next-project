@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo } from "react";
-import Link from "next/link";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -13,10 +12,10 @@ import { LoadingDots } from "./loading-dots";
 import CloseIcon from "@/assets/icons/close.svg";
 import EpicIcon from "@/assets/icons/epic.svg";
 import CalendarIcon from "@/assets/icons/calendar.svg";
-import NoTaskIcon from "@/assets/icons/no-task.svg";
 import { useDebouncedCallback } from "@/hooks/use-debounced";
 import { EpicSchema, type EpicFormValues } from "@/schemas/project";
 import { ReactSelectField } from "@/components/ui/react-select-field";
+import { EpicTasksList } from "./epic-tasks-list";
 
 type EpicDetailsModalProps = {
   isOpen: boolean;
@@ -230,7 +229,6 @@ function EpicDetailsForm({
     );
   };
 
-  const createTaskHref = `/project/${projectId}/tasks/new?epicId=${epic.id}`;
 
   return (
     <>
@@ -383,33 +381,7 @@ function EpicDetailsForm({
         </div>
 
         {/* Add Tasks Card */}
-        <div className="mt-9">
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-lg font-bold text-navy">Tasks</h3>
-
-            <Link
-              href={createTaskHref}
-              onClick={onClose}
-              className="text-sm font-bold text-primary"
-            >
-              + Add Task
-            </Link>
-          </div>
-
-          <div className="flex min-h-48 flex-col items-center justify-center rounded-lg border border-dashed border-[#D8E1F5] bg-[#F4F7FF] p-6 text-center">
-            <NoTaskIcon aria-label="no task added yet" />
-
-            <p className="my-4 text-sm font-medium text-navy">
-              No tasks have been added to this epic yet
-            </p>
-
-            <Link href={createTaskHref} onClick={onClose}>
-              <Button type="button" variant="primary" className="px-6">
-                + Add Task
-              </Button>
-            </Link>
-          </div>
-        </div>
+        <EpicTasksList epicId={epic.id} projectId={projectId} onAddTaskClick={onClose} />
       </div>
     </>
   );

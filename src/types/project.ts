@@ -74,3 +74,36 @@ export type CreateTaskPayload = {
   status: TaskStatus;
 };
 
+export type TaskPayload = {
+  id: string;
+  task_id: string;
+  title: string;
+  description?: string | null;
+  status: string;
+
+  project_id: string;
+  epic_id: string;
+
+  due_date?: string | null;
+  created_at: string;
+
+  assignee: {
+    id: string | null;
+    name: string | null;
+    email: string | null;
+    department: string | null;
+  } | null;
+
+  created_by: {
+    id: string;
+    name: string;
+    email: string;
+    department: string | null;
+  } | null;
+
+  epic: {
+    id: string;
+    title: string;
+    epic_id: string;
+  } | null;
+};

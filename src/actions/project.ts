@@ -8,9 +8,11 @@ import {
   Project,
   ProjectEpic,
   ProjectPayload,
+  TaskPayload,
   UpdateEpicPayload,
 } from "@/types/project";
 
+/* <<<<<<<<<<<<<<< PROJECTS >>>>>>>>>>>>>>>>> */
 //Create Project
 export async function createProject(data: ProjectPayload) {
   return apiFetch("/rest/v1/projects", {
@@ -78,6 +80,8 @@ export async function getProjectByID(projectId: string) {
     data: response.data[0],
   };
 }
+
+/* <<<<<<<<<<<<<<< MEMBERS >>>>>>>>>>>>>>>>> */
 //Get All Members Of Project
 export async function getProjectMembers(projectId: string) {
   const response = await apiFetch<Member[]>(
@@ -93,6 +97,7 @@ export async function getProjectMembers(projectId: string) {
   };
 }
 
+/* <<<<<<<<<<<<<<< EPICS >>>>>>>>>>>>>>>>> */
 //Create Epic
 export async function createEpic(data: CreateEpicPayload) {
   const response = await apiFetch("/rest/v1/epics", {
@@ -161,6 +166,8 @@ export async function updateEpic(projectId: string, epicId: string, payload: Upd
   return getProjectEpicByID(projectId, epicId);
 }
 
+/* <<<<<<<<<<<<<<< TASKS >>>>>>>>>>>>>>>>> */
+
 //Create Task
 export async function createTask(payload: CreateTaskPayload) {
   return await apiFetch("/rest/v1/tasks", {
@@ -170,4 +177,12 @@ export async function createTask(payload: CreateTaskPayload) {
   });
 }
 
+// Get Tasks of Epic
+export async function getEpicTasks(epicId: string) {
+  const response = await apiFetch<TaskPayload[]>(`/rest/v1/project_tasks?epic_id=eq.${epicId}`, {
+    method: "GET",
+    requiresAuth: true,
+  });
 
+  return response.data;
+}
