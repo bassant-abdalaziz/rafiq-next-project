@@ -1,6 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo } from "react";
+import Link from "next/link";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import { Member, ProjectEpic, UpdateEpicPayload } from "@/types/project";
 import { formatProjectDate, getAvatarInitials } from "@/utils/helpers";
@@ -9,9 +14,9 @@ import CloseIcon from "@/assets/icons/close.svg";
 import EpicIcon from "@/assets/icons/epic.svg";
 import CalendarIcon from "@/assets/icons/calendar.svg";
 import NoTaskIcon from "@/assets/icons/no-task.svg";
-import { toast } from "sonner";
 import { useDebouncedCallback } from "@/hooks/use-debounced";
-import Link from "next/link";
+import { EpicSchema, type EpicFormValues } from "@/schemas/project";
+import { ReactSelectField } from "@/components/ui/react-select-field";
 
 type EpicDetailsModalProps = {
   isOpen: boolean;
@@ -93,7 +98,7 @@ export function EpicDetailsModal({
   );
 }
 
-//Epic Edit Form
+// Epic Edit Form
 function EpicDetailsForm({
   epic,
   projectMembers,
@@ -101,10 +106,37 @@ function EpicDetailsForm({
   onClose,
   onUpdate,
 }: EpicDetailsFormProps) {
-  const [title, setTitle] = useState(epic.title ?? "");
-  const [description, setDescription] = useState(epic.description ?? "");
-  const [deadline, setDeadline] = useState(toDateInputValue(epic.deadline));
-  const [assigneeId, setAssigneeId] = useState(epic.assignee?.sub ?? "");
+  const {
+    control,
+    watch,
+    trigger,
+    setValue,
+    formState: { errors },
+  } = useForm<EpicFormValues>({
+    resolver: zodResolver(EpicSchema),
+    mode: "onChange",
+    defaultValues: {
+      title: epic.title ?? "",
+      description: epic.description ?? "",
+      assignee_id: epic.assignee?.sub ?? "",
+      deadline: toDateInputValue(epic.deadline),
+    },
+  });
+
+  const description = watch("description") || "";
+
+  const assigneeOptions = useMemo(() => {
+    return [
+      {
+        value: "",
+        label: "Unassigned",
+      },
+      ...projectMembers.map((member) => ({
+        value: member.user_id,
+        label: member.metadata?.name,
+      })),
+    ];
+  }, [projectMembers]);
 
   // Update the server and rollback the UI if the update request fails.
   const updateWithRollback = async (payload: UpdateEpicPayload, rollback: () => void) => {
@@ -117,71 +149,92 @@ function EpicDetailsForm({
   };
 
   const saveTitleChange = useDebouncedCallback(async (value: string) => {
+    const isValid = await trigger("title");
+
+    if (!isValid) return;
+
     const trimmedTitle = value.trim();
     const currentTitle = epic.title ?? "";
 
-    if (!trimmedTitle) {
-      setTitle(currentTitle);
-      toast.error("Title is required.");
-      return;
-    }
-
     if (trimmedTitle === currentTitle) return;
 
-    await updateWithRollback({ title: trimmedTitle }, () => setTitle(currentTitle));
+    await updateWithRollback({ title: trimmedTitle }, () => {
+      setValue("title", currentTitle, {
+        shouldValidate: true,
+        shouldDirty: false,
+      });
+    });
   }, 600);
 
-  const handleTitleChange = (value: string) => {
-    setTitle(value);
-    saveTitleChange(value);
-  };
-
   const saveDescriptionChange = useDebouncedCallback(async (value: string) => {
+    const isValid = await trigger("description");
+
+    if (!isValid) return;
+
     const currentDescription = epic.description ?? "";
     const nextDescription = value.trim() ? value : null;
 
     if ((value || "") === currentDescription) return;
 
-    await updateWithRollback({ description: nextDescription }, () =>
-      setDescription(currentDescription)
-    );
+    await updateWithRollback({ description: nextDescription }, () => {
+      setValue("description", currentDescription, {
+        shouldValidate: true,
+        shouldDirty: false,
+      });
+    });
   }, 600);
 
-  const handleDescriptionChange = (value: string) => {
-    setDescription(value);
-    saveDescriptionChange(value);
-  };
-
   const handleAssigneeChange = async (value: string) => {
-    const previousValue = assigneeId;
+    const previousValue = epic.assignee?.sub ?? "";
 
-    setAssigneeId(value);
+    setValue("assignee_id", value, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
 
     await updateWithRollback(
       {
         assignee_id: value || null,
       },
-      () => setAssigneeId(previousValue)
+      () => {
+        setValue("assignee_id", previousValue, {
+          shouldValidate: true,
+          shouldDirty: false,
+        });
+      }
     );
   };
 
   const handleDeadlineChange = async (value: string) => {
-    const previousValue = deadline;
+    const previousValue = toDateInputValue(epic.deadline);
 
-    setDeadline(value);
+    setValue("deadline", value, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+
+    const isValid = await trigger("deadline");
+
+    if (!isValid) return;
 
     await updateWithRollback(
       {
         deadline: value || null,
       },
-      () => setDeadline(previousValue)
+      () => {
+        setValue("deadline", previousValue, {
+          shouldValidate: true,
+          shouldDirty: false,
+        });
+      }
     );
   };
+
   const createTaskHref = `/project/${projectId}/tasks/new?epicId=${epic.id}`;
 
   return (
     <>
-      {/*Header Card*/}
+      {/* Header Card */}
       <div className="flex items-center justify-between p-3 md:p-5">
         <div className="flex items-center gap-2">
           <EpicIcon aria-hidden="true" />
@@ -197,24 +250,60 @@ function EpicDetailsForm({
       <div className="p-3 md:p-5">
         <div>
           <p className="mb-2 text-[10px] font-bold uppercase tracking-wide text-slate">Title</p>
-          <input
-            value={title}
-            onChange={(e) => handleTitleChange(e.target.value)}
-            className="w-full rounded-lg border border-[#D8E1F5] px-4 py-3 text-lg font-bold text-navy outline-none focus:border-primary"
+
+          <Controller
+            control={control}
+            name="title"
+            render={({ field }) => (
+              <input
+                value={field.value ?? ""}
+                onBlur={field.onBlur}
+                onChange={(e) => {
+                  const value = e.target.value;
+
+                  field.onChange(value);
+                  saveTitleChange(value);
+                }}
+                className="w-full rounded-lg border border-[#D8E1F5] px-4 py-3 text-lg font-bold text-navy outline-none focus:border-primary"
+              />
+            )}
           />
+
+          {errors.title?.message && (
+            <p className="mt-2 text-xs font-semibold text-error">{errors.title.message}</p>
+          )}
         </div>
 
         <div className="mt-7">
-          <p className="mb-2 text-[10px] font-bold uppercase tracking-wide text-slate">
-            Description
-          </p>
+          <div className="mb-2 flex items-center justify-between">
+            <p className="text-[10px] font-bold uppercase tracking-wide text-slate">Description</p>
 
-          <textarea
-            value={description}
-            onChange={(e) => handleDescriptionChange(e.target.value)}
-            placeholder="No description provided"
-            className="min-h-32 w-full resize-none rounded-lg border border-[#D8E1F5] px-4 py-3 text-sm text-navy outline-none focus:border-primary"
+            <span className="text-xs text-slate">{description.length}/500</span>
+          </div>
+
+          <Controller
+            control={control}
+            name="description"
+            render={({ field }) => (
+              <textarea
+                value={field.value ?? ""}
+                onBlur={field.onBlur}
+                onChange={(e) => {
+                  const value = e.target.value;
+
+                  field.onChange(value);
+                  saveDescriptionChange(value);
+                }}
+                placeholder="No description provided"
+                maxLength={500}
+                className="min-h-32 w-full resize-none rounded-lg border border-[#D8E1F5] px-4 py-3 text-sm text-navy outline-none focus:border-primary"
+              />
+            )}
           />
+
+          {errors.description?.message && (
+            <p className="mt-2 text-xs font-semibold text-error">{errors.description.message}</p>
+          )}
         </div>
 
         <div className="mt-7 grid gap-5 md:grid-cols-3">
@@ -234,40 +323,59 @@ function EpicDetailsForm({
 
           <div>
             <p className="mb-2 text-[10px] font-bold uppercase tracking-wide text-slate">
-              Assignee
-            </p>
-
-            <select
-              value={assigneeId}
-              onChange={(e) => handleAssigneeChange(e.target.value)}
-              className="h-11 w-full rounded-lg border border-[#D8E1F5] px-3 text-sm font-bold text-navy outline-none focus:border-primary"
-            >
-              <option value="">Unassigned</option>
-
-              {projectMembers.map((member) => (
-                <option key={member.member_id} value={member.user_id}>
-                  {member.metadata?.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <p className="mb-2 text-[10px] font-bold uppercase tracking-wide text-slate">
               Deadline
             </p>
 
-            <input
-              type="date"
-              value={deadline}
-              onChange={(e) => handleDeadlineChange(e.target.value)}
-              className="h-11 w-full rounded-lg border border-[#D8E1F5] px-3 text-sm font-bold text-navy outline-none focus:border-primary"
+            <Controller
+              control={control}
+              name="deadline"
+              render={({ field }) => (
+                <input
+                  type="date"
+                  value={field.value ?? ""}
+                  onBlur={field.onBlur}
+                  onChange={(e) => {
+                    const value = e.target.value;
+
+                    field.onChange(value);
+                    void handleDeadlineChange(value);
+                  }}
+                  className="h-11 w-full rounded-lg border border-[#D8E1F5] px-3 text-sm font-bold text-navy outline-none focus:border-primary"
+                />
+              )}
             />
+
+            {errors.deadline?.message && (
+              <p className="mt-2 text-xs font-semibold text-error">{errors.deadline.message}</p>
+            )}
           </div>
+
+          <Controller
+            control={control}
+            name="assignee_id"
+            render={({ field }) => (
+              <ReactSelectField
+                id="assignee_id"
+                label="Assignee"
+                value={field.value ?? ""}
+                onChange={(value) => {
+                  field.onChange(value);
+                  void handleAssigneeChange(value);
+                }}
+                onBlur={field.onBlur}
+                placeholder="Unassigned"
+                error={errors.assignee_id?.message}
+                options={assigneeOptions}
+                isSearchable
+                isClearable
+              />
+            )}
+          />
         </div>
 
         <div className="mt-6">
           <p className="text-[10px] font-bold uppercase tracking-wide text-slate">Created At</p>
+
           <div className="flex items-center gap-1">
             <CalendarIcon aria-hidden="true" />
             <p className="text-sm font-bold text-navy">{formatProjectDate(epic.created_at)}</p>
@@ -300,8 +408,6 @@ function EpicDetailsForm({
                 + Add Task
               </Button>
             </Link>
-
-           
           </div>
         </div>
       </div>

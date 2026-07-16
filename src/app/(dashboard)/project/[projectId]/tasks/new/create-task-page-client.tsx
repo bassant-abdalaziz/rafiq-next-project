@@ -6,7 +6,7 @@ import { EpicFormLayout } from "@/components/dashboard/ui/epic-form-layout";
 import { TaskForm } from "@/components/dashboard/forms/task-form";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { fetchAllProjectMembers } from "@/redux/slices/projectMembersSlice";
-import { fetchProjectByID } from "@/redux/slices/projectsSlice";
+import { fetchProjectByID } from "@/redux/slices/projectSlice";
 
 type CreateTaskPageClientProps = {
   projectId: string;

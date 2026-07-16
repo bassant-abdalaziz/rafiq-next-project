@@ -16,25 +16,31 @@ export function DashboardShell({ children }: DashboardShellProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const dispatch = useAppDispatch();
+
   useEffect(() => {
     dispatch(fetchCurrentUser());
   }, [dispatch]);
 
   return (
-    <div className="min-h-screen bg-background ">
-      <div className="flex min-h-screen">
-        <Sidebar
-          isCollapsed={isSidebarCollapsed}
-          isMobileOpen={isMobileMenuOpen}
-          onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
-          onCloseMobile={() => setIsMobileMenuOpen(false)}
-        />
+    <div className="h-dvh overflow-hidden bg-background">
+      <Sidebar
+        isCollapsed={isSidebarCollapsed}
+        isMobileOpen={isMobileMenuOpen}
+        onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
+        onCloseMobile={() => setIsMobileMenuOpen(false)}
+      />
 
-        <div className="flex min-h-screen flex-1 flex-col">
-          <Navbar onOpenMenu={() => setIsMobileMenuOpen(true)} />
+      <div
+        className={`
+          flex h-full min-h-0 flex-col transition-all duration-300
+          ${isSidebarCollapsed ? "md:ml-20" : "md:ml-64"}
+        `}
+      >
+        <Navbar onOpenMenu={() => setIsMobileMenuOpen(true)} />
 
-          <main className="flex-1 px-5 py-6 pb-24 md:px-8 md:pb-8">{children}</main>
-        </div>
+        <main className="min-h-0 flex-1 overflow-y-auto px-5 py-6 pb-24 md:px-8 md:pb-8">
+          {children}
+        </main>
       </div>
 
       <BottomMobileNavbar />

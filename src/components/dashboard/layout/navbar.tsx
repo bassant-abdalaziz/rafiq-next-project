@@ -15,7 +15,7 @@ export function Navbar({ onOpenMenu }: NavbarProps) {
   const jobTitle = user?.user_metadata?.department;
 
   return (
-    <header className="flex  items-center justify-between border-b border-[#E4E8F1] bg-background px-6 py-3 h-18 md:justify-end ">
+    <header className="flex h-18 shrink-0 items-center justify-between border-b border-[#E4E8F1] bg-background px-6 py-3 md:justify-end">
       <div className="flex items-center gap-1 md:hidden">
         <button
           type="button"
@@ -32,6 +32,7 @@ export function Navbar({ onOpenMenu }: NavbarProps) {
       <div className="flex items-center gap-3">
         <div className="hidden text-right md:block">
           <p className="text-sm font-semibold leading-4 text-navy">{userName}</p>
+
           {jobTitle && (
             <p className="text-[10px] font-bold uppercase tracking-[1px] text-primary">
               {jobTitle}

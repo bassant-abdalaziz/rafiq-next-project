@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { useEffect } from "react";
 import { fetchAllProjectMembers } from "@/redux/slices/projectMembersSlice";
 import { EpicForm } from "@/components/dashboard/forms/epic-form";
-import { fetchProjectByID } from "@/redux/slices/projectsSlice";
+import { fetchProjectByID } from "@/redux/slices/projectSlice";
 
 export default function CreateEpicPage() {
   const params = useParams<{ projectId: string }>();

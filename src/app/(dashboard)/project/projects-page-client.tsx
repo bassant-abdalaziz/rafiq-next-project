@@ -9,111 +9,67 @@ import AddProjectIcon from "@/assets/icons/plus.svg";
 import { SectionHeader } from "@/components/dashboard/ui/section-header";
 import { ProjectCard } from "@/components/dashboard/ui/project-card";
 import { Pagination } from "@/components/dashboard/ui/pagination";
-import { useEffect, useRef } from "react";
 import { ProjectsSkeleton } from "@/components/dashboard/ui/projects-skeleton";
 import RetryIcon from "@/assets/icons/error.svg";
-import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { fetchAllProjects } from "@/redux/slices/projectsSlice";
 import { usePathname, useSearchParams } from "next/navigation";
-import { getOffset } from "@/utils/helpers";
-import { LoadingDots } from "@/components/dashboard/ui/loading-dots";
+import { getProjects } from "@/actions/project";
+import { useCallback } from "react";
+import { Project } from "@/types/project";
+import { usePaginatedFetch } from "@/hooks/use-paginated-fetch";
+import { InfiniteScrollTrigger } from "@/components/dashboard/ui/infinite-scroll-trigger";
 
 const PROJECTS_LIMIT = 10;
 
 export default function ProjectsPageClient() {
-  const dispatch = useAppDispatch();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-
-  const { projects, totalCount, isLoading, isLoadingMore, error, loadMoreError, hasFetched } =
-    useAppSelector((state) => state.projects);
-
-  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   // Get page number from URL params
   const pageFromUrl = Number(searchParams.get("page") || 1);
 
   const page = Number.isInteger(pageFromUrl) && pageFromUrl > 0 ? pageFromUrl : 1;
 
-  const currentOffset = getOffset(page, PROJECTS_LIMIT);
+  const fetchProjects = useCallback(
+    async ({ limit, offset }: { limit: number; offset: number }) => {
+      const response = await getProjects(limit, offset);
 
-  const loadedUntil = currentOffset + projects.length;
-  const hasMore = loadedUntil < totalCount;
+      return {
+        items: response.projects,
+        totalCount: response.totalCount,
+      };
+    },
+    []
+  );
 
-  // Fetch projects on initial load and whenever page changes from URL
-  useEffect(() => {
-    const offset = getOffset(page, PROJECTS_LIMIT);
-
-    dispatch(
-      fetchAllProjects({
-        limit: PROJECTS_LIMIT,
-        offset,
-        mode: "replace",
-      })
-    );
-  }, [dispatch, page]);
-
-  const handleRetry = () => {
-    dispatch(
-      fetchAllProjects({
-        limit: PROJECTS_LIMIT,
-        offset: getOffset(page, PROJECTS_LIMIT),
-        mode: "replace",
-      })
-    );
-  };
-
-  // Apply infinite scroll by using IntersectionObserver >>> only on mobile
-  useEffect(() => {
-    const element = loadMoreRef.current;
-
-    if (!element) return;
-    if (!hasFetched) return;
-    if (isLoading || isLoadingMore) return;
-    if (error || loadMoreError) return;
-    if (!hasMore) return;
-
-    const isMobile = window.matchMedia("(max-width: 767px)").matches;
-
-    if (!isMobile) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const firstEntry = entries[0];
-
-        if (firstEntry.isIntersecting) {
-          dispatch(
-            fetchAllProjects({
-              limit: PROJECTS_LIMIT,
-              offset: loadedUntil,
-              mode: "append",
-            })
-          );
-        }
-      },
-      { root: null, rootMargin: "200px", threshold: 0 }
-    );
-
-    observer.observe(element);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [dispatch, hasFetched, isLoading, isLoadingMore, error, loadMoreError, hasMore, loadedUntil]);
+  const {
+    items: projects,
+    totalCount,
+    isLoading,
+    isLoadingMore,
+    error,
+    hasFetched,
+    hasMore,
+    fetchMore,
+    retry,
+  } = usePaginatedFetch<Project>({
+    limit: PROJECTS_LIMIT,
+    page,
+    fetcher: fetchProjects,
+  });
 
   // desktop loading
   if (!hasFetched || isLoading) {
     return <ProjectsSkeleton />;
   }
 
-  if (error || loadMoreError) {
+  if (error) {
     return (
       <ProjectsState
         icon={<RetryIcon />}
         title="Something went wrong"
         description="We're having trouble retrieving your projects right now. Please try again in a moment."
         btn={
-          <Button type="button" variant="primary" className="px-6" onClick={handleRetry}>
+          <Button type="button" variant="primary" className="px-6" onClick={retry}>
             Retry Connection
           </Button>
         }
@@ -167,10 +123,11 @@ export default function ProjectsPageClient() {
         ))}
       </div>
 
-      <div ref={loadMoreRef} className="h-10 md:hidden" />
-
-      {/* mobile loading */}
-      {isLoadingMore && <LoadingDots label="Loading more projects" className="mt-4 md:hidden" />}
+      <InfiniteScrollTrigger
+        canLoadMore={hasMore}
+        isLoadingMore={isLoadingMore}
+        onLoadMore={fetchMore}
+      />
 
       <Pagination
         total={totalCount}

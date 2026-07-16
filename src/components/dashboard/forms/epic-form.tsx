@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Input, Select, Textarea } from "@/components/ui/input";
+import { Input, Textarea } from "@/components/ui/input";
+import { ReactSelectField } from "@/components/ui/react-select-field";
 import { getErrorMessage } from "@/utils/helpers";
 import type { Member } from "@/types/project";
 import { type EpicFormValues, EpicSchema } from "@/schemas/project";
@@ -20,6 +21,7 @@ type EpicFormProps = {
 export function EpicForm({ projectId, members }: EpicFormProps) {
   const {
     register,
+    control,
     handleSubmit,
     watch,
     reset,
@@ -36,6 +38,11 @@ export function EpicForm({ projectId, members }: EpicFormProps) {
   });
 
   const description = watch("description") || "";
+
+  const assigneeOptions = members.map((member) => ({
+    value: member.user_id,
+    label: member.metadata?.name,
+  }));
 
   const onSubmit = async (data: EpicFormValues) => {
     try {
@@ -80,18 +87,6 @@ export function EpicForm({ projectId, members }: EpicFormProps) {
       />
 
       <div className="grid gap-6 md:grid-cols-2">
-        <Select
-          id="assignee_id"
-          label="Assignee"
-          placeholder="Select a member..."
-          error={errors.assignee_id?.message}
-          options={members.map((member) => ({
-            value: member.user_id,
-            label: member.metadata?.name,
-          }))}
-          {...register("assignee_id")}
-        />
-
         <Input
           id="deadline"
           label="Deadline"
@@ -99,6 +94,28 @@ export function EpicForm({ projectId, members }: EpicFormProps) {
           error={errors.deadline?.message}
           {...register("deadline")}
         />
+
+        <div className="mt-2">
+          {" "}
+          <Controller
+            control={control}
+            name="assignee_id"
+            render={({ field }) => (
+              <ReactSelectField
+                id="assignee_id"
+                label="Assignee"
+                placeholder="Select a member..."
+                value={field.value ?? ""}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                error={errors.assignee_id?.message}
+                options={assigneeOptions}
+                isSearchable
+                isClearable
+              />
+            )}
+          />
+        </div>
       </div>
 
       <div className="flex flex-col-reverse gap-4 border-t border-[#EEF1F7] pt-8 md:flex-row md:items-center md:justify-end">

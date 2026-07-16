@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, usePathname, useSearchParams } from "next/navigation";
@@ -12,6 +12,7 @@ import { Pagination } from "@/components/dashboard/ui/pagination";
 import { ProjectEpicCard } from "@/components/dashboard/ui/project-epic-card";
 import { ProjectEpicsSkeleton } from "@/components/dashboard/ui/project-epics-skeleton";
 import { EpicDetailsModal } from "@/components/dashboard/ui/epic-details-modal";
+import { InfiniteScrollTrigger } from "@/components/dashboard/ui/infinite-scroll-trigger";
 
 import AddProjectIcon from "@/assets/icons/plus.svg";
 import RetryIcon from "@/assets/icons/error.svg";
@@ -19,16 +20,15 @@ import RetryIcon from "@/assets/icons/error.svg";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import {
   clearSelectedEpic,
-  fetchAllProjectEpics,
   fetchProjectEpicByID,
   updateProjectEpic,
 } from "@/redux/slices/projectEpicsSlice";
-import { fetchProjectByID } from "@/redux/slices/projectsSlice";
+import { fetchProjectByID } from "@/redux/slices/projectSlice";
 import { fetchAllProjectMembers } from "@/redux/slices/projectMembersSlice";
 
-import { getOffset } from "@/utils/helpers";
-import { UpdateEpicPayload } from "@/types/project";
-import { LoadingDots } from "@/components/dashboard/ui/loading-dots";
+import { getProjectEpics } from "@/actions/project";
+import { usePaginatedFetch } from "@/hooks/use-paginated-fetch";
+import { ProjectEpic, UpdateEpicPayload } from "@/types/project";
 
 const PROJECT_EPICS_LIMIT = 10;
 
@@ -44,18 +44,9 @@ export default function EpicsPageClient() {
   const [selectedEpicId, setSelectedEpicId] = useState<string | null>(null);
   const [isEpicModalOpen, setIsEpicModalOpen] = useState(false);
 
-  const {
-    projectEpics,
-    totalCount,
-    isLoading,
-    isLoadingMore,
-    error,
-    loadMoreError,
-    hasFetched,
-    selectedEpic,
-    selectedEpicLoading,
-    selectedEpicError,
-  } = useAppSelector((state) => state.projectEpics);
+  const { selectedEpic, selectedEpicLoading, selectedEpicError } = useAppSelector(
+    (state) => state.projectEpics
+  );
 
   const {
     projectMembers,
@@ -65,31 +56,37 @@ export default function EpicsPageClient() {
 
   const { isProjectFetched, fetchedProjectId, project } = useAppSelector((state) => state.projects);
 
-  const loadMoreRef = useRef<HTMLDivElement | null>(null);
-  const isFetchingMoreRef = useRef(false);
-
   const pageFromUrl = Number(searchParams.get("page") || 1);
   const page = Number.isInteger(pageFromUrl) && pageFromUrl > 0 ? pageFromUrl : 1;
 
-  const currentOffset = getOffset(page, PROJECT_EPICS_LIMIT);
-  const loadedUntil = currentOffset + projectEpics.length;
-  const hasMore = loadedUntil < totalCount;
+  const fetchProjectEpics = useCallback(
+    async ({ limit, offset }: { limit: number; offset: number }) => {
+      const response = await getProjectEpics(projectId, limit, offset);
 
-  // Fetch epics on initial load and whenever page or projectId changes
-  useEffect(() => {
-    if (!projectId) return;
+      return {
+        items: response.projectEpics,
+        totalCount: response.totalCount,
+      };
+    },
+    [projectId]
+  );
 
-    const offset = getOffset(page, PROJECT_EPICS_LIMIT);
-
-    dispatch(
-      fetchAllProjectEpics({
-        projectId,
-        limit: PROJECT_EPICS_LIMIT,
-        offset,
-        mode: "replace",
-      })
-    );
-  }, [dispatch, projectId, page]);
+  const {
+    items: projectEpics,
+    totalCount,
+    isLoading,
+    isLoadingMore,
+    error,
+    hasFetched,
+    hasMore,
+    fetchMore,
+    updateItem,
+    retry,
+  } = usePaginatedFetch<ProjectEpic>({
+    limit: PROJECT_EPICS_LIMIT,
+    page,
+    fetcher: fetchProjectEpics,
+  });
 
   // Get project name
   useEffect(() => {
@@ -101,19 +98,6 @@ export default function EpicsPageClient() {
       dispatch(fetchProjectByID({ projectId }));
     }
   }, [dispatch, projectId, isProjectFetched, fetchedProjectId]);
-
-  const handleRetry = () => {
-    if (!projectId) return;
-
-    dispatch(
-      fetchAllProjectEpics({
-        projectId,
-        limit: PROJECT_EPICS_LIMIT,
-        offset: getOffset(page, PROJECT_EPICS_LIMIT),
-        mode: "replace",
-      })
-    );
-  };
 
   const handleOpenEpic = (epicId: string) => {
     if (!projectId) return;
@@ -150,81 +134,32 @@ export default function EpicsPageClient() {
   const handleUpdateEpic = async (payload: UpdateEpicPayload) => {
     if (!projectId || !selectedEpicId) return;
 
-    await dispatch(
+    const updatedEpic = await dispatch(
       updateProjectEpic({
         projectId,
         epicId: selectedEpicId,
         payload,
       })
     ).unwrap();
-  };
 
-  // Apply infinite scroll by using IntersectionObserver >>> only on mobile
-  useEffect(() => {
-    const element = loadMoreRef.current;
-
-    if (!element) return;
-    if (!hasFetched) return;
-    if (isLoading || isLoadingMore) return;
-    if (error || loadMoreError) return;
-    if (!hasMore) return;
-
-    const isMobile = window.matchMedia("(max-width: 767px)").matches;
-
-    if (!isMobile) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const firstEntry = entries[0];
-
-        if (!firstEntry.isIntersecting) return;
-        if (isFetchingMoreRef.current) return;
-
-        isFetchingMoreRef.current = true;
-
-        dispatch(
-          fetchAllProjectEpics({
-            projectId,
-            limit: PROJECT_EPICS_LIMIT,
-            offset: loadedUntil,
-            mode: "append",
-          })
-        ).finally(() => {
-          isFetchingMoreRef.current = false;
-        });
-      },
-      { root: null, rootMargin: "200px", threshold: 0 }
+    updateItem(
+      (epic) => epic.id === updatedEpic.id,
+      () => updatedEpic
     );
-
-    observer.observe(element);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [
-    dispatch,
-    projectId,
-    hasFetched,
-    isLoading,
-    isLoadingMore,
-    error,
-    loadMoreError,
-    hasMore,
-    loadedUntil,
-  ]);
+  };
 
   if (!hasFetched || isLoading) {
     return <ProjectEpicsSkeleton />;
   }
 
-  if (error || loadMoreError) {
+  if (error) {
     return (
       <ProjectsState
         icon={<RetryIcon />}
         title="Something went wrong"
         description="We're having trouble retrieving your project epics right now. Please try again in a moment."
         btn={
-          <Button type="button" variant="primary" className="px-6" onClick={handleRetry}>
+          <Button type="button" variant="primary" className="px-6" onClick={retry}>
             Retry Connection
           </Button>
         }
@@ -286,9 +221,11 @@ export default function EpicsPageClient() {
         ))}
       </div>
 
-      <div ref={loadMoreRef} className="h-10 md:hidden" />
-
-      {isLoadingMore && <LoadingDots label="Loading more epics" className="mt-4 md:hidden" />}
+      <InfiniteScrollTrigger
+        canLoadMore={hasMore}
+        isLoadingMore={isLoadingMore}
+        onLoadMore={fetchMore}
+      />
 
       <Pagination
         total={totalCount}

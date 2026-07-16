@@ -150,6 +150,7 @@ export async function getProjectEpicByID(projectId: string, epicId: string) {
   return epic;
 }
 
+// Update Epic
 export async function updateEpic(projectId: string, epicId: string, payload: UpdateEpicPayload) {
   await apiFetch(`/rest/v1/epics?id=eq.${epicId}`, {
     method: "PATCH",
@@ -160,6 +161,7 @@ export async function updateEpic(projectId: string, epicId: string, payload: Upd
   return getProjectEpicByID(projectId, epicId);
 }
 
+//Create Task
 export async function createTask(payload: CreateTaskPayload) {
   return await apiFetch("/rest/v1/tasks", {
     method: "POST",
@@ -167,3 +169,5 @@ export async function createTask(payload: CreateTaskPayload) {
     body: JSON.stringify(payload),
   });
 }
+
+

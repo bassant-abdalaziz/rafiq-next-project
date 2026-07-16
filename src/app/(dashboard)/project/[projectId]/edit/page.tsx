@@ -3,7 +3,7 @@
 import { ProjectForm } from "@/components/dashboard/forms/project-form";
 import { ProjectFormLayout } from "@/components/dashboard/ui/project-form-layout";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { fetchProjectByID } from "@/redux/slices/projectsSlice";
+import { fetchProjectByID } from "@/redux/slices/projectSlice";
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
 
