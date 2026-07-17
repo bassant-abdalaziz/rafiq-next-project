@@ -11,7 +11,7 @@ import { Input, Textarea } from "@/components/ui/input";
 import { ReactSelectField } from "@/components/ui/react-select-field";
 import { createTask, getProjectEpics } from "@/actions/project";
 import { getErrorMessage } from "@/utils/helpers";
-import type { Member, ProjectEpic } from "@/types/project";
+import type { Member, ProjectEpic, TaskStatus } from "@/types/project";
 import { TASK_STATUS_OPTIONS } from "@/constants";
 import { type TaskFormValues, TaskSchema } from "@/schemas/project";
 
@@ -19,9 +19,10 @@ type TaskFormProps = {
   projectId: string;
   members: Member[];
   initialEpicId?: string;
+  initialStatus?: TaskStatus;
 };
 
-function formatStatusLabel(status: string) {
+function formatStatusLabel(status: TaskStatus) {
   return status.replaceAll("_", " ");
 }
 
@@ -35,7 +36,12 @@ function toIsoDateTime(value?: string) {
   return new Date(value).toISOString();
 }
 
-export function TaskForm({ projectId, members, initialEpicId = "" }: TaskFormProps) {
+export function TaskForm({
+  projectId,
+  members,
+  initialEpicId = "",
+  initialStatus = "TO_DO",
+}: TaskFormProps) {
   const [projectEpics, setProjectEpics] = useState<ProjectEpic[]>([]);
   const [isEpicsLoading, setIsEpicsLoading] = useState(false);
 
@@ -51,7 +57,7 @@ export function TaskForm({ projectId, members, initialEpicId = "" }: TaskFormPro
     mode: "onBlur",
     defaultValues: {
       title: "",
-      status: "TO_DO",
+      status: initialStatus,
       epic_id: initialEpicId,
       assignee_id: "",
       due_date: "",
@@ -117,7 +123,7 @@ export function TaskForm({ projectId, members, initialEpicId = "" }: TaskFormPro
 
         reset({
           title: "",
-          status: "TO_DO",
+          status: initialStatus,
           epic_id: initialEpicId,
           assignee_id: "",
           due_date: "",

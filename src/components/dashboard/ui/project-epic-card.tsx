@@ -1,5 +1,5 @@
 import { ProjectEpic } from "@/types/project";
-import { formatProjectDate, getAvatarInitials } from "@/utils/helpers";
+import { formatProjectDate, getAvatarColorClasses, getAvatarInitials } from "@/utils/helpers";
 import CalendarIcon from "@/assets/icons/calendar.svg";
 import UserIcon from "@/assets/icons/user.svg";
 
@@ -33,7 +33,9 @@ export function ProjectEpicCard({ epic, onClick }: ProjectEpicCardProps) {
       <div className="mt-5 flex items-end justify-between gap-4">
         {epic.assignee?.name ? (
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-light-success text-sm font-bold">
+            <div
+              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg  text-sm font-bold ${getAvatarColorClasses(epic.assignee.name)}`}
+            >
               {getAvatarInitials(epic.assignee.name)}
             </div>
 

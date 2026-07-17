@@ -7,7 +7,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Member, ProjectEpic, UpdateEpicPayload } from "@/types/project";
-import { formatProjectDate, getAvatarInitials } from "@/utils/helpers";
+import { formatProjectDate, getAvatarColorClasses, getAvatarInitials } from "@/utils/helpers";
 import { LoadingDots } from "./loading-dots";
 import CloseIcon from "@/assets/icons/close.svg";
 import EpicIcon from "@/assets/icons/epic.svg";
@@ -311,7 +311,7 @@ function EpicDetailsForm({
             </p>
 
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
+              <div className={`flex h-8 w-8 items-center justify-center rounded-full  text-xs font-bold ${getAvatarColorClasses(epic.created_by?.name)}`}>
                 {getAvatarInitials(epic.created_by?.name)}
               </div>
 

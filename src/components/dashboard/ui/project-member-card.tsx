@@ -1,5 +1,5 @@
 import type { Member } from "@/types/project";
-import { getAvatarInitials } from "@/utils/helpers";
+import { getAvatarColorClasses, getAvatarInitials } from "@/utils/helpers";
 
 type ProjectMemberCardProps = {
   member: Member;
@@ -34,7 +34,7 @@ export function ProjectMemberCard({ member }: ProjectMemberCardProps) {
   return (
     <div className="grid grid-cols-[1fr_auto_auto] items-center gap-3 rounded-sm bg-white p-4 shadow-sm md:grid-cols-[1.6fr_0.8fr_0.4fr] md:rounded-none md:border-b md:border-[#EEF1F7] md:px-8 md:py-5 md:shadow-none md:last:border-b-0">
       <div className="flex min-w-0 items-center gap-4">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[#DCE8FF] text-sm font-bold text-primary">
+        <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg  text-sm font-bold  ${getAvatarColorClasses(name)}`}>
           {initials}
         </div>
 

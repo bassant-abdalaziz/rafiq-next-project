@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { getEpicTasks } from "@/actions/project";
 import { TaskPayload } from "@/types/project";
-import { getAvatarInitials } from "@/utils/helpers";
+import { getAvatarColorClasses, getAvatarInitials } from "@/utils/helpers";
 import { LoadingDots } from "./loading-dots";
 import NoTaskIcon from "@/assets/icons/no-task.svg";
 import CalendarIcon from "@/assets/icons/calendar.svg";
@@ -60,7 +60,7 @@ function TaskAssignee({ task }: { task: TaskPayload }) {
       <div
         className={`
           flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[9px] font-bold
-          ${task.assignee?.name ? "bg-primary text-white" : "bg-[#EEF3FF] text-slate"}
+          ${getAvatarColorClasses(assigneeName)}
         `}
       >
         {getAvatarInitials(assigneeName)}
@@ -126,7 +126,6 @@ export function EpicTasksList({ epicId, projectId, onAddTaskClick }: EpicTasksLi
 
       try {
         const response = await getEpicTasks(epicId);
-        console.log("res>>>>", response);
 
         setTasks(response);
       } catch {

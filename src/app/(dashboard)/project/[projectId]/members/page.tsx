@@ -13,6 +13,7 @@ import { PageHeader } from "@/components/dashboard/ui/page-header";
 import { useParams } from "next/navigation";
 import { ProjectMembersSkeleton } from "@/components/dashboard/ui/project-members-skeleton";
 import { ProjectMemberCard } from "@/components/dashboard/ui/project-member-card";
+import { fetchProjectByID } from "@/redux/slices/projectSlice";
 
 export default function ProjectMembersPage() {
   const params = useParams<{ projectId: string }>();
@@ -24,6 +25,8 @@ export default function ProjectMembersPage() {
     (state) => state.projectMembers
   );
 
+  const { isProjectFetched, fetchedProjectId:fetchedProjectID, project } = useAppSelector((state) => state.projects);
+
   useEffect(() => {
     if (!projectId) return;
 
@@ -33,6 +36,18 @@ export default function ProjectMembersPage() {
       dispatch(fetchAllProjectMembers({ projectId }));
     }
   }, [dispatch, projectId, hasFetched, fetchedProjectId]);
+
+  // Get project name
+  useEffect(() => {
+    if (!projectId) return;
+
+    const shouldFetchProject = !isProjectFetched || fetchedProjectID !== projectId;
+
+    if (shouldFetchProject) {
+      dispatch(fetchProjectByID({ projectId }));
+    }
+  }, [dispatch, projectId, isProjectFetched, fetchedProjectID]);
+
   if (!hasFetched || isLoading) {
     return <ProjectMembersSkeleton />;
   }
@@ -89,7 +104,7 @@ export default function ProjectMembersPage() {
           title="Project Members"
           breadcrumbs={[
             { label: "Projects", href: "/project" },
-            { label: "Project Name" },
+            { label: project?.name ?? "Project" },
             { label: "Members" },
           ]}
         />

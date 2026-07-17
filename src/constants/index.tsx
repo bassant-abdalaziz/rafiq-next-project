@@ -34,7 +34,7 @@ export function getMenuItems(projectId?: string | null): MenuItem[] {
     },
     {
       label: "Project Tasks",
-      href: `/project/${projectId}/tasks`,
+      href: `/project/${projectId}/tasks?view=board`,
       Icon: ProjectsTasksIcon,
     },
     {
@@ -87,31 +87,6 @@ export function getMobileItems(projectId?: string | null): MenuItem[] {
     },
   ];
 }
-export function getProjectIdFromPathname(pathname: string) {
-  const segments = pathname.split("/").filter(Boolean);
-
-  // /project
-  // segments = ["project"]
-
-  // /project/add
-  // segments = ["project", "add"]
-
-  // /project/123/epics
-  // segments = ["project", "123", "epics"]
-
-  if (segments[0] !== "project") {
-    return null;
-  }
-
-  const projectId = segments[1];
-
-  if (!projectId || projectId === "add") {
-    return null;
-  }
-
-  return projectId;
-}
-
 
 export const TASK_STATUS_OPTIONS = [
   "TO_DO",

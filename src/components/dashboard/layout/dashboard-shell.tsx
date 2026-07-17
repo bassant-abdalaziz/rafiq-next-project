@@ -32,13 +32,13 @@ export function DashboardShell({ children }: DashboardShellProps) {
 
       <div
         className={`
-          flex h-full min-h-0 flex-col transition-all duration-300
-          ${isSidebarCollapsed ? "md:ml-20" : "md:ml-64"}
-        `}
+    flex h-full min-h-0 min-w-0 flex-col transition-all duration-300
+    ${isSidebarCollapsed ? "md:ml-20" : "md:ml-64"}
+  `}
       >
         <Navbar onOpenMenu={() => setIsMobileMenuOpen(true)} />
 
-        <main className="min-h-0 flex-1 overflow-y-auto px-5 py-6 pb-24 md:px-8 md:pb-8">
+        <main className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden px-5 py-6 pb-24 md:px-8 md:pb-8">
           {children}
         </main>
       </div>

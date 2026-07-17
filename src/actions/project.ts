@@ -9,6 +9,7 @@ import {
   ProjectEpic,
   ProjectPayload,
   TaskPayload,
+  TaskStatus,
   UpdateEpicPayload,
 } from "@/types/project";
 
@@ -183,6 +184,32 @@ export async function getEpicTasks(epicId: string) {
     method: "GET",
     requiresAuth: true,
   });
+
+  return response.data;
+}
+
+// Get Project Tasks By Status
+export async function getProjectTasksByStatus(projectId: string, status: TaskStatus) {
+  const response = await apiFetch<TaskPayload[]>(
+    `/rest/v1/project_tasks?project_id=eq.${projectId}&status=eq.${status}`,
+    {
+      method: "GET",
+      requiresAuth: true,
+    }
+  );
+
+  return response.data;
+}
+
+// Get All Project Tasks By Status
+export async function getAllProjectTasks(projectId: string) {
+  const response = await apiFetch<TaskPayload[]>(
+    `/rest/v1/project_tasks?project_id=eq.${projectId}`,
+    {
+      method: "GET",
+      requiresAuth: true,
+    }
+  );
 
   return response.data;
 }

@@ -74,7 +74,8 @@ export function Sidebar({
 
           <nav className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
             {menuItems.map((item) => {
-              const isActive = pathname === item.href;
+              const itemPathname = item.href.split("?")[0];
+              const isActive = pathname === itemPathname;
               const Icon = item.Icon;
 
               return (

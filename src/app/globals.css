@@ -20,6 +20,7 @@
 
   /* Slate Neutrals Colors*/
   --color-navy: #041b3c;
+  --color-light-navy: #DCE8FF;
   --color-slate: #4f5f7b;
   --color-slate-light: #c3c6d6;
   --color-slate-dark: #737685;
@@ -31,6 +32,7 @@
   --color-darker-success: #004E32;
   --color-light-success: #65DCA4;
   --color-error: #ba1a1a;
+  --color-light-error: #FFDAD6;
   --color-warning: #ffb300;
 
   /* Typography */

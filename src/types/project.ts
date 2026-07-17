@@ -79,7 +79,7 @@ export type TaskPayload = {
   task_id: string;
   title: string;
   description?: string | null;
-  status: string;
+  status:  TaskStatus;
 
   project_id: string;
   epic_id: string;
@@ -106,4 +106,12 @@ export type TaskPayload = {
     title: string;
     epic_id: string;
   } | null;
+};
+
+export type TaskView = "list" | "board";
+
+export type TasksArgs = {
+  tasks: TaskPayload[];
+  loading: boolean;
+  error: boolean;
 };

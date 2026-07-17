@@ -7,13 +7,15 @@ import { TaskForm } from "@/components/dashboard/forms/task-form";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { fetchAllProjectMembers } from "@/redux/slices/projectMembersSlice";
 import { fetchProjectByID } from "@/redux/slices/projectSlice";
+import { TaskStatus } from "@/types/project";
 
 type CreateTaskPageClientProps = {
   projectId: string;
   initialEpicId?: string;
+  initialStatus?: TaskStatus;
 };
 
-export function CreateTaskPageClient({ projectId, initialEpicId = "" }: CreateTaskPageClientProps) {
+export function CreateTaskPageClient({ projectId, initialEpicId = "" , initialStatus}: CreateTaskPageClientProps) {
   const dispatch = useAppDispatch();
 
   const {
@@ -52,7 +54,7 @@ export function CreateTaskPageClient({ projectId, initialEpicId = "" }: CreateTa
       sectionTitle="Create New Task"
       sectionDescription="Initialize a new work item within the Architectural Workspace ecosystem."
     >
-      <TaskForm projectId={projectId} members={projectMembers} initialEpicId={initialEpicId} />
+      <TaskForm projectId={projectId} members={projectMembers} initialEpicId={initialEpicId} initialStatus={initialStatus} />
     </EpicFormLayout>
   );
 }

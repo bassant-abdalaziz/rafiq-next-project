@@ -6,7 +6,7 @@ type BreadcrumbItem = {
 };
 
 type PageHeaderProps = {
-  title: string;
+  title?: string;
   breadcrumbs?: BreadcrumbItem[];
 };
 
