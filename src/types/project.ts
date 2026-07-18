@@ -79,7 +79,7 @@ export type TaskPayload = {
   task_id: string;
   title: string;
   description?: string | null;
-  status:  TaskStatus;
+  status: TaskStatus;
 
   project_id: string;
   epic_id: string;
@@ -114,4 +114,5 @@ export type TasksArgs = {
   tasks: TaskPayload[];
   loading: boolean;
   error: boolean;
+  onTaskClick?: (taskId: string) => void;
 };

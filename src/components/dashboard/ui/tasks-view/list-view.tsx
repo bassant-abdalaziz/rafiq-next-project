@@ -31,11 +31,20 @@ function ListDotsButton() {
   );
 }
 
-function TaskRow({ task }: { task: TaskPayload }) {
+function TaskRow({
+  task,
+  onTaskClick,
+}: {
+  task: TaskPayload;
+  onTaskClick?: (taskId: string) => void;
+}) {
   const assigneeName = task.assignee?.name ?? "Unassigned";
 
   return (
-    <tr className="border-b border-[#EEF2F7] bg-white">
+    <tr
+      onClick={() => onTaskClick?.(task.id)}
+      className="cursor-pointer border-b border-[#EEF2F7] bg-white "
+    >
       <td className="px-6 py-7 align-middle">
         <span className="text-[12px] font-normal text-primary">{task.task_id}</span>
       </td>
@@ -147,7 +156,7 @@ function TasksTable({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function ListView({ tasks, loading, error }: TasksArgs) {
+export function ListView({ tasks, loading, error, onTaskClick }: TasksArgs) {
   return (
     <div className="mt-10 w-full">
       {/* Handle Loading */}
@@ -171,7 +180,7 @@ export function ListView({ tasks, loading, error }: TasksArgs) {
         <>
           <TasksTable>
             {tasks.map((task) => (
-              <TaskRow key={task.id} task={task} />
+              <TaskRow key={task.id} task={task} onTaskClick={onTaskClick} />
             ))}
           </TasksTable>
 

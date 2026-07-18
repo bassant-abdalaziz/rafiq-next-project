@@ -15,7 +15,6 @@ function formatTaskDueDate(value?: string | null) {
   return formatProjectDate(value);
 }
 
-
 function MobileDotsButton() {
   return (
     <button
@@ -32,11 +31,20 @@ function MobileDotsButton() {
   );
 }
 
-function TaskCard({ task }: { task: TaskPayload }) {
+function TaskCard({
+  task,
+  onTaskClick,
+}: {
+  task: TaskPayload;
+  onTaskClick?: (taskId: string) => void;
+}) {
   const assigneeName = task.assignee?.name ?? "Unassigned";
 
   return (
-    <div className="rounded-2xl bg-white p-6 shadow-sm">
+    <div
+      onClick={() => onTaskClick?.(task.id)}
+      className="cursor-pointer rounded-2xl bg-white p-6 shadow-sm "
+    >
       <div className="flex items-start justify-between gap-4">
         <p className="text-xs font-bold uppercase text-slate-darker/80">{task.task_id}</p>
 
@@ -110,7 +118,7 @@ function TaskCardSkeleton() {
   );
 }
 
-export function MobileView({ tasks, loading, error }: TasksArgs) {
+export function MobileView({ tasks, loading, error, onTaskClick }: TasksArgs) {
   return !loading && tasks.length === 0 ? (
     <div className="p-8 text-center text-sm font-semibold text-slate">No tasks found</div>
   ) : (
@@ -135,7 +143,7 @@ export function MobileView({ tasks, loading, error }: TasksArgs) {
       {!loading && !error && (
         <div className="space-y-5">
           {tasks.map((task) => (
-            <TaskCard key={task.id} task={task} />
+            <TaskCard key={task.id} task={task} onTaskClick={onTaskClick} />
           ))}
         </div>
       )}

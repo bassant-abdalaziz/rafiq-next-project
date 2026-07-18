@@ -201,7 +201,7 @@ export async function getProjectTasksByStatus(projectId: string, status: TaskSta
   return response.data;
 }
 
-// Get All Project Tasks By Status
+// Get All Project Tasks 
 export async function getAllProjectTasks(projectId: string) {
   const response = await apiFetch<TaskPayload[]>(
     `/rest/v1/project_tasks?project_id=eq.${projectId}`,
@@ -212,4 +212,17 @@ export async function getAllProjectTasks(projectId: string) {
   );
 
   return response.data;
+}
+
+// Get Project Task Details
+export async function getProjectTaskDetails(projectId: string, taskId: string) {
+  const response = await apiFetch<TaskPayload[]>(
+    `/rest/v1/project_tasks?project_id=eq.${projectId}&id=eq.${taskId}`,
+    {
+      method: "GET",
+      requiresAuth: true,
+    }
+  );
+
+  return response.data[0] ?? null;
 }

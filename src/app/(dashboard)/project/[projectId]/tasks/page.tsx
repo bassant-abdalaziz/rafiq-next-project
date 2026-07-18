@@ -4,12 +4,12 @@ import { TaskView } from "@/types/project";
 
 type ProjectTasksPageProps = {
   params: Promise<{ projectId: string }>;
-  searchParams: Promise<{ view?: TaskView }>;
+  searchParams: Promise<{ view?: TaskView; taskId?: string }>;
 };
 
 export default async function ProjectTasksPage({ params, searchParams }: ProjectTasksPageProps) {
   const { projectId } = await params;
-  const { view } = await searchParams;
+  const { view, taskId } = await searchParams;
 
   const currentView: TaskView = view === "list" ? "list" : "board";
 
@@ -22,7 +22,7 @@ export default async function ProjectTasksPage({ params, searchParams }: Project
         </div>
       }
     >
-      <TasksPageClient projectId={projectId} view={currentView} />
+      <TasksPageClient projectId={projectId} view={currentView} initialTaskId={taskId ?? null} />
     </Suspense>
   );
 }

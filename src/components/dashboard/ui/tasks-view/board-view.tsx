@@ -19,6 +19,7 @@ import AddNewTaskIcon from "@/assets/icons/add-new-task.svg";
 
 type BoardViewProps = {
   projectId: string;
+  onTaskClick?: (taskId: string) => void;
 };
 
 type TaskStatus = (typeof TASK_STATUS_OPTIONS)[number];
@@ -61,15 +62,23 @@ function isDelayed(task: TaskPayload) {
   return getDueDateLabel(task) === "DELAYED";
 }
 
-function TaskCard({ task }: { task: TaskPayload }) {
+function TaskCard({
+  task,
+  onTaskClick,
+}: {
+  task: TaskPayload;
+  onTaskClick?: (taskId: string) => void;
+}) {
   const assigneeName = task.assignee?.name ?? "Unassigned";
   const dueDateLabel = getDueDateLabel(task);
   const delayed = isDelayed(task);
 
+
   return (
     <div
+      onClick={() => onTaskClick?.(task.id)}
       className={`
-        rounded-lg border border-transparent  p-5 shadow-sm
+         cursor-pointer rounded-lg border border-transparent  p-5 shadow-sm
         ${delayed ? " bg-light-error" : " bg-white"}
         ${task.status === "IN_PROGRESS" ? "border-l-4 border-l-primary" : ""}
       `}
@@ -114,7 +123,15 @@ function TaskCardSkeleton() {
   );
 }
 
-function BoardColumn({ projectId, status }: { projectId: string; status: TaskStatus }) {
+function BoardColumn({
+  projectId,
+  status,
+  onTaskClick,
+}: {
+  projectId: string;
+  status: TaskStatus;
+  onTaskClick?: (taskId: string) => void;
+}) {
   const [tasks, setTasks] = useState<TaskPayload[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -197,7 +214,7 @@ function BoardColumn({ projectId, status }: { projectId: string; status: TaskSta
         !error && (
           <div className="space-y-8">
             {tasks.map((task) => (
-              <TaskCard key={task.id} task={task} />
+              <TaskCard key={task.id} task={task} onTaskClick={onTaskClick} />
             ))}
           </div>
         )
@@ -206,7 +223,7 @@ function BoardColumn({ projectId, status }: { projectId: string; status: TaskSta
   );
 }
 
-export function BoardView({ projectId }: BoardViewProps) {
+export function BoardView({ projectId, onTaskClick }: BoardViewProps) {
   const columnWidth = 380;
   const columnGap = 24;
   const columnsCount = TASK_STATUS_OPTIONS.length;
@@ -234,7 +251,12 @@ export function BoardView({ projectId }: BoardViewProps) {
           }}
         >
           {TASK_STATUS_OPTIONS.map((status) => (
-            <BoardColumn key={status} projectId={projectId} status={status} />
+            <BoardColumn
+              key={status}
+              projectId={projectId}
+              status={status}
+              onTaskClick={onTaskClick}
+            />
           ))}
         </div>
       </div>
