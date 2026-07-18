@@ -226,3 +226,18 @@ export async function getProjectTaskDetails(projectId: string, taskId: string) {
 
   return response.data[0] ?? null;
 }
+
+
+// Update Task Status
+export async function updateTaskStatus(taskId: string, status: TaskStatus) {
+  const response = await apiFetch<TaskPayload[]>(
+    `/rest/v1/tasks?id=eq.${taskId}`,
+    {
+      method: "PATCH",
+      requiresAuth: true,
+      body: JSON.stringify({ status }),
+    }
+  );
+
+  return response.data;
+}
