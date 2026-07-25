@@ -4,19 +4,17 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { SectionHeader } from "@/components/dashboard/ui/section-header";
-import {
-  StatisticsFilters,
-  type StatisticsDateRange,
-} from "@/components/dashboard/ui/statistics/statistics-filters";
+import { StatisticsFilters } from "@/components/dashboard/ui/statistics/statistics-filters";
 import { getErrorMessage } from "@/utils/helpers";
 import { getProjects, getTasksCalendarStats } from "@/actions/project";
-import type { TaskStatus, TasksCalendarStatsResponse } from "@/types/project";
+import type { StatisticsDateRange, TaskStatus, TasksCalendarStatsResponse } from "@/types/project";
 
 import TotalTasksIcon from "@/assets/icons/total-tasks.svg";
 import CompletedTasksIcon from "@/assets/icons/completed-tasks.svg";
 import OverDueTasksIcon from "@/assets/icons/overdue-tasks.svg";
 import { TaskCard } from "@/components/dashboard/ui/statistics/task-card";
 import { LoadingDots } from "@/components/dashboard/ui/loading-dots";
+import { WeeklyCalendar } from "@/components/dashboard/ui/statistics/weekly-calendar";
 
 type ProjectFilterOption = {
   id: string;
@@ -121,7 +119,7 @@ export default function MyStatisticsPageClient() {
           status,
         });
 
-        console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>data", data);
+        // console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>data", data);
 
         setStats(data);
       } catch (error) {
@@ -165,22 +163,27 @@ export default function MyStatisticsPageClient() {
         {isError && <p className="text-sm font-semibold text-error">Failed to load statistics.</p>}
 
         {!isLoading && !isError && stats && (
-          // Tasks Cards Section
-          <div className="mt-8 flex flex-col gap-4 md:flex-row">
-            <TaskCard title="TOTAL TASKS" icon={<TotalTasksIcon />} value={stats.total_tasks} />
+          <>
+            {/* Tasks Cards Section */}
+            <div className="mt-8 flex flex-col gap-4 md:flex-row">
+              <TaskCard title="TOTAL TASKS" icon={<TotalTasksIcon />} value={stats.total_tasks} />
 
-            <TaskCard
-              title="COMPLETED TASKS"
-              icon={<CompletedTasksIcon />}
-              value={stats.done_tasks}
-            />
+              <TaskCard
+                title="COMPLETED TASKS"
+                icon={<CompletedTasksIcon />}
+                value={stats.done_tasks}
+              />
 
-            <TaskCard
-              title="OVERDUE TASKS"
-              icon={<OverDueTasksIcon />}
-              value={stats.overdue_tasks}
-            />
-          </div>
+              <TaskCard
+                title="OVERDUE TASKS"
+                icon={<OverDueTasksIcon />}
+                value={stats.overdue_tasks}
+              />
+            </div>
+
+            {/* Weekly Calendar Section */}
+            <WeeklyCalendar dateRange={dateRange} daily={stats.daily} />
+          </>
         )}
       </div>
     </div>

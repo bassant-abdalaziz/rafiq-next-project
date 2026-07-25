@@ -31,17 +31,6 @@ export function ProjectFormLayout({
     <div className="w-full">
       <div className="mb-8 hidden items-start justify-between gap-4 md:flex">
         <PageHeader title={pageTitle} breadcrumbs={breadcrumbs} />
-
-        <Link href="/project/add">
-          <Button
-            type="button"
-            variant="primary"
-            iconElement={<InviteMemberIcon aria-hidden="true" />}
-            className="px-6"
-          >
-            Invite Member
-          </Button>
-        </Link>
       </div>
 
       <section className="mx-auto mt-8 w-full max-w-3xl overflow-hidden md:rounded-lg md:bg-white md:shadow-sm">

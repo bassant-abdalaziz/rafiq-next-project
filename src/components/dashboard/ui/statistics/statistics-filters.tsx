@@ -5,16 +5,13 @@ import { addDays, differenceInCalendarDays, format, parseISO } from "date-fns";
 import { DayPicker, type DateRange } from "react-day-picker";
 
 import { TASK_STATUS_OPTIONS } from "@/constants";
-import { TaskStatus } from "@/types/project";
+import { StatisticsDateRange, TaskStatus } from "@/types/project";
 
 import PreviousIcon from "@/assets/icons/prev-date.svg";
 import NextIcon from "@/assets/icons/next-date.svg";
 import { ReactSelectField, type SelectOption } from "@/components/ui/react-select-field";
 
-export type StatisticsDateRange = {
-  startDate: string;
-  endDate: string;
-};
+
 
 type ProjectOption = {
   id: string;

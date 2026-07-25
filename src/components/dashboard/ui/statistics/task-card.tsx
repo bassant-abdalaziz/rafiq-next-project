@@ -1,3 +1,4 @@
+
 import { ReactNode } from "react";
 
 type TaskCardProps = {
@@ -12,7 +13,9 @@ export function TaskCard({ title, value, icon }: TaskCardProps) {
       <div>
         <p className="text-xs font-bold tracking-[0.8px] text-slate/60">{title}</p>
 
-        <p className={`mt-3 text-[30px] font-bold leading-none text-navy`}>
+        <p
+          className={`mt-3 text-[30px] font-bold leading-none text-${title === "OVERDUE TASKS" ? "error" : "navy"} `}
+        >
           {value}
         </p>
       </div>

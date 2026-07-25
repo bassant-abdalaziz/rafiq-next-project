@@ -146,3 +146,8 @@ export type GetTasksCountPerProjectPayload = {
   startDate: string;
   endDate: string;
 };
+
+export type StatisticsDateRange = {
+  startDate: string;
+  endDate: string;
+};
