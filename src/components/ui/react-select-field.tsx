@@ -9,7 +9,7 @@ export type SelectOption = {
 
 type ReactSelectFieldProps = {
   id: string;
-  label: string;
+  label?: string;
   value?: string;
   options: SelectOption[];
   onChange: (value: string) => void;
@@ -47,17 +47,23 @@ export function ReactSelectField({
   const selectedOption = options.find((option) => option.value === value) ?? null;
 
   return (
-    <div >
-      <div className="mb-2 flex items-center justify-between gap-3">
-        <label
-          htmlFor={id}
-          className="block text-[10px] font-bold uppercase tracking-[0.6px] text-slate"
-        >
-          {label}
-        </label>
+    <div>
+      {(label || optionalText) && (
+        <div className="mb-2 flex items-center justify-between gap-3">
+          {label && (
+            <label
+              htmlFor={id}
+              className="block text-[10px] font-bold uppercase tracking-[0.6px] text-slate"
+            >
+              {label}
+            </label>
+          )}
 
-        {optionalText && <span className="text-xs font-medium text-slate/50">{optionalText}</span>}
-      </div>
+          {optionalText && (
+            <span className="text-xs font-medium text-slate/50">{optionalText}</span>
+          )}
+        </div>
+      )}
 
       <ReactSelect<SelectOption, false>
         instanceId={id}

@@ -114,7 +114,10 @@ export async function proxy(request: NextRequest) {
   const isHomePage = pathname === "/";
   const isAuthPage = authPages.includes(pathname);
   const isProtectedPage =
-    pathname === "/project" || pathname.startsWith("/project/") || pathname === "/invite";
+    pathname === "/project" ||
+    pathname.startsWith("/project/") ||
+    pathname === "/invite" ||
+    pathname === "/my-statistics";
 
   /**
 
@@ -159,7 +162,7 @@ export async function proxy(request: NextRequest) {
       return setAuthCookies(response, refreshedSession);
     }
 
-  const response = NextResponse.redirect(createLoginRedirectUrl(request));
+    const response = NextResponse.redirect(createLoginRedirectUrl(request));
     return clearAuthCookies(response);
   }
 
@@ -200,6 +203,7 @@ export const config = {
     "/",
     "/project/:path*",
     "/invite",
+    "/my-statistics",
     "/login",
     "/sign-up",
     "/forgot-password",

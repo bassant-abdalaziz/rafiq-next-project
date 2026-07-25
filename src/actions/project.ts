@@ -4,12 +4,15 @@ import { apiFetch } from "@/lib/api";
 import {
   CreateEpicPayload,
   CreateTaskPayload,
+  GetTasksCalendarStatsPayload,
+  GetTasksCountPerProjectPayload,
   InviteProjectMemberPayload,
   Member,
   Project,
   ProjectEpic,
   ProjectPayload,
   TaskPayload,
+  TasksCalendarStatsResponse,
   TaskStatus,
   UpdateEpicPayload,
 } from "@/types/project";
@@ -269,4 +272,45 @@ export async function acceptProjectInvitation(token: string) {
   });
 
   return response;
+}
+
+// Get calendar, KPI, and status statistics for the current logged-in user
+export async function getTasksCalendarStats({
+  startDate,
+  endDate,
+  projectId = null,
+  status = null,
+}: GetTasksCalendarStatsPayload) {
+  const response = await apiFetch<TasksCalendarStatsResponse>(
+    "/rest/v1/rpc/get_tasks_calendar_stats",
+    {
+      method: "POST",
+      requiresAuth: true,
+      body: JSON.stringify({
+        p_start_date: startDate,
+        p_end_date: endDate,
+        p_project_id: projectId,
+        p_status: status,
+      }),
+    }
+  );
+
+  return response.data;
+}
+
+// Get tasks count grouped by project for the selected date range
+export async function getTasksCountPerProject({
+  startDate,
+  endDate,
+}: GetTasksCountPerProjectPayload) {
+  const response = await apiFetch("/rest/v1/rpc/get_tasks_count_per_project", {
+    method: "POST",
+    requiresAuth: true,
+    body: JSON.stringify({
+      p_start_date: startDate,
+      p_end_date: endDate,
+    }),
+  });
+
+  return response.data;
 }

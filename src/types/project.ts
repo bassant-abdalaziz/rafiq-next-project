@@ -121,3 +121,28 @@ export type InviteProjectMemberPayload = {
   email: string;
   projectId: string;
 };
+
+type CalendarDayStats = {
+  day: string;
+  statuses: Partial<Record<TaskStatus, number>>;
+};
+
+export type TasksCalendarStatsResponse = {
+  daily: CalendarDayStats[];
+  totals: Partial<Record<TaskStatus, number>>;
+  total_tasks: number;
+  done_tasks: number;
+  overdue_tasks: number;
+};
+
+export type GetTasksCalendarStatsPayload = {
+  startDate: string;
+  endDate: string;
+  projectId?: string | null;
+  status?: TaskStatus | null;
+};
+
+export type GetTasksCountPerProjectPayload = {
+  startDate: string;
+  endDate: string;
+};

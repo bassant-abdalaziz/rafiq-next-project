@@ -5,6 +5,7 @@ import ProjectsEpicsIcon from "@/assets/icons/projects-epics.svg";
 import ProjectsTasksIcon from "@/assets/icons/projects-tasks.svg";
 import ProjectsMembersIcon from "@/assets/icons/projects-members.svg";
 import ProjectsDetailsIcon from "@/assets/icons/projects-details.svg";
+import StatisticsIcon from "@/assets/icons/statistics.svg";
 
 type MenuItem = {
   label: string;
@@ -18,6 +19,11 @@ export function getMenuItems(projectId?: string | null): MenuItem[] {
       label: "Projects",
       href: "/project",
       Icon: ProjectsIcon,
+    },
+    {
+      label: "My Statistics",
+      href: "/my-statistics",
+      Icon: StatisticsIcon,
     },
   ];
 
