@@ -85,6 +85,26 @@ function clearAuthCookies(response: NextResponse) {
   return response;
 }
 
+function createLoginRedirectUrl(request: NextRequest) {
+  const loginUrl = new URL("/login", request.url);
+
+  const currentPath = `${request.nextUrl.pathname}${request.nextUrl.search}`;
+
+  loginUrl.searchParams.set("redirectTo", currentPath);
+
+  return loginUrl;
+}
+
+function getSafeRedirectPath(request: NextRequest) {
+  const redirectTo = request.nextUrl.searchParams.get("redirectTo");
+
+  if (redirectTo?.startsWith("/") && !redirectTo.startsWith("//")) {
+    return redirectTo;
+  }
+
+  return "/project";
+}
+
 export async function proxy(request: NextRequest) {
   const accessToken = request.cookies.get("access_token")?.value;
   const pathname = request.nextUrl.pathname;
@@ -93,7 +113,8 @@ export async function proxy(request: NextRequest) {
 
   const isHomePage = pathname === "/";
   const isAuthPage = authPages.includes(pathname);
-  const isProtectedPage = pathname === "/project" || pathname.startsWith("/project/");
+  const isProtectedPage =
+    pathname === "/project" || pathname.startsWith("/project/") || pathname === "/invite";
 
   /**
 
@@ -138,7 +159,7 @@ export async function proxy(request: NextRequest) {
       return setAuthCookies(response, refreshedSession);
     }
 
-    const response = NextResponse.redirect(new URL("/login", request.url));
+  const response = NextResponse.redirect(createLoginRedirectUrl(request));
     return clearAuthCookies(response);
   }
 
@@ -150,7 +171,7 @@ export async function proxy(request: NextRequest) {
 
 */
   if (accessToken && isAuthPage) {
-    return NextResponse.redirect(new URL("/project", request.url));
+    return NextResponse.redirect(new URL(getSafeRedirectPath(request), request.url));
   }
 
   /**
@@ -175,5 +196,13 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/project/:path*", "/login", "/sign-up", "/forgot-password", "/reset-password"],
+  matcher: [
+    "/",
+    "/project/:path*",
+    "/invite",
+    "/login",
+    "/sign-up",
+    "/forgot-password",
+    "/reset-password",
+  ],
 };

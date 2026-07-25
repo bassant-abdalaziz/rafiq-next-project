@@ -46,7 +46,15 @@ export default function Login() {
       const res = await logIn(payload);
 
       if (res.ok && res.status === 200) {
-        router.push("/project");
+        // router.push("/project");
+
+        const params = new URLSearchParams(window.location.search);
+        const redirectTo = params.get("redirectTo");
+
+        const safeRedirectTo =
+          redirectTo?.startsWith("/") && !redirectTo.startsWith("//") ? redirectTo : "/project";
+
+        router.push(safeRedirectTo);
       }
     } catch (error) {
       const message = getErrorMessage(error);

@@ -116,3 +116,8 @@ export type TasksArgs = {
   error: boolean;
   onTaskClick?: (taskId: string) => void;
 };
+
+export type InviteProjectMemberPayload = {
+  email: string;
+  projectId: string;
+};

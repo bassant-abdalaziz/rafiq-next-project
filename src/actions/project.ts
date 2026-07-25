@@ -4,6 +4,7 @@ import { apiFetch } from "@/lib/api";
 import {
   CreateEpicPayload,
   CreateTaskPayload,
+  InviteProjectMemberPayload,
   Member,
   Project,
   ProjectEpic,
@@ -201,7 +202,7 @@ export async function getProjectTasksByStatus(projectId: string, status: TaskSta
   return response.data;
 }
 
-// Get All Project Tasks 
+// Get All Project Tasks
 export async function getAllProjectTasks(projectId: string) {
   const response = await apiFetch<TaskPayload[]>(
     `/rest/v1/project_tasks?project_id=eq.${projectId}`,
@@ -227,17 +228,45 @@ export async function getProjectTaskDetails(projectId: string, taskId: string) {
   return response.data[0] ?? null;
 }
 
-
 // Update Task Status
 export async function updateTaskStatus(taskId: string, status: TaskStatus) {
-  const response = await apiFetch<TaskPayload[]>(
-    `/rest/v1/tasks?id=eq.${taskId}`,
-    {
-      method: "PATCH",
-      requiresAuth: true,
-      body: JSON.stringify({ status }),
-    }
-  );
+  const response = await apiFetch<TaskPayload[]>(`/rest/v1/tasks?id=eq.${taskId}`, {
+    method: "PATCH",
+    requiresAuth: true,
+    body: JSON.stringify({ status }),
+  });
 
   return response.data;
+}
+
+// Send invitation email to a new project member
+export async function inviteProjectMember({ email, projectId }: InviteProjectMemberPayload) {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+  const response = await apiFetch("/rest/v1/rpc/invite_member", {
+    method: "POST",
+    requiresAuth: true,
+    body: JSON.stringify({
+      p_email: email,
+      p_project_id: projectId,
+      p_app_url: appUrl,
+      p_base_url: baseUrl,
+    }),
+  });
+
+  return response;
+}
+
+// Accept project invitation using the token from the invite link
+export async function acceptProjectInvitation(token: string) {
+  const response = await apiFetch("/rest/v1/rpc/accept_invitation", {
+    method: "POST",
+    requiresAuth: true,
+    body: JSON.stringify({
+      p_token: token,
+    }),
+  });
+
+  return response;
 }
