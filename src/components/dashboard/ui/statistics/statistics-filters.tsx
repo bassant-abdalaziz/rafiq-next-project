@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { addDays, differenceInCalendarDays, format, parseISO } from "date-fns";
 import { DayPicker, type DateRange } from "react-day-picker";
 
@@ -9,7 +9,7 @@ import { TaskStatus } from "@/types/project";
 
 import PreviousIcon from "@/assets/icons/prev-date.svg";
 import NextIcon from "@/assets/icons/next-date.svg";
-import { ReactSelectField ,type SelectOption} from "@/components/ui/react-select-field";
+import { ReactSelectField, type SelectOption } from "@/components/ui/react-select-field";
 
 export type StatisticsDateRange = {
   startDate: string;
@@ -49,6 +49,13 @@ function formatStatusLabel(status: TaskStatus) {
     .join(" ");
 }
 
+function getDraftRangeFromDateRange(dateRange: StatisticsDateRange): DateRange {
+  return {
+    from: parseISO(dateRange.startDate),
+    to: parseISO(dateRange.endDate),
+  };
+}
+
 export function StatisticsFilters({
   dateRange,
   projectId,
@@ -60,49 +67,52 @@ export function StatisticsFilters({
 }: StatisticsFiltersProps) {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [dateError, setDateError] = useState("");
-  const [draftRange, setDraftRange] = useState<DateRange>({
-    from: parseISO(dateRange.startDate),
-    to: parseISO(dateRange.endDate),
-  });
+  const [draftRange, setDraftRange] = useState<DateRange | undefined>(() =>
+    getDraftRangeFromDateRange(dateRange)
+  );
 
-  useEffect(() => {
-    setDraftRange({
-      from: parseISO(dateRange.startDate),
-      to: parseISO(dateRange.endDate),
-    });
-  }, [dateRange.startDate, dateRange.endDate]);
+  const handleOpenCalendar = () => {
+    setDateError("");
+    setDraftRange(getDraftRangeFromDateRange(dateRange));
+    setIsCalendarOpen((currentValue) => !currentValue);
+  };
 
   const handlePreviousWeek = () => {
     const startDate = addDays(parseISO(dateRange.startDate), -7);
     const endDate = addDays(parseISO(dateRange.endDate), -7);
 
-    onDateRangeChange({
+    const nextDateRange = {
       startDate: formatDateForApi(startDate),
       endDate: formatDateForApi(endDate),
-    });
+    };
+
+    setDateError("");
+    setDraftRange(getDraftRangeFromDateRange(nextDateRange));
+    onDateRangeChange(nextDateRange);
   };
 
   const handleNextWeek = () => {
     const startDate = addDays(parseISO(dateRange.startDate), 7);
     const endDate = addDays(parseISO(dateRange.endDate), 7);
 
-    onDateRangeChange({
+    const nextDateRange = {
       startDate: formatDateForApi(startDate),
       endDate: formatDateForApi(endDate),
-    });
+    };
+
+    setDateError("");
+    setDraftRange(getDraftRangeFromDateRange(nextDateRange));
+    onDateRangeChange(nextDateRange);
   };
 
   const handleCancelRange = () => {
     setDateError("");
-    setDraftRange({
-      from: parseISO(dateRange.startDate),
-      to: parseISO(dateRange.endDate),
-    });
+    setDraftRange(getDraftRangeFromDateRange(dateRange));
     setIsCalendarOpen(false);
   };
 
   const handleApplyRange = () => {
-    if (!draftRange.from || !draftRange.to) {
+    if (!draftRange?.from || !draftRange?.to) {
       setDateError("Please select start and end date");
       return;
     }
@@ -114,13 +124,13 @@ export function StatisticsFilters({
       return;
     }
 
-    setDateError("");
-
-    onDateRangeChange({
+    const nextDateRange = {
       startDate: formatDateForApi(draftRange.from),
       endDate: formatDateForApi(draftRange.to),
-    });
+    };
 
+    setDateError("");
+    onDateRangeChange(nextDateRange);
     setIsCalendarOpen(false);
   };
 
@@ -157,7 +167,7 @@ export function StatisticsFilters({
 
             <button
               type="button"
-              onClick={() => setIsCalendarOpen((currentValue) => !currentValue)}
+              onClick={handleOpenCalendar}
               className="min-w-20 text-left text-sm font-bold text-navy"
             >
               {formatDateRangeLabel(dateRange)}
@@ -178,7 +188,10 @@ export function StatisticsFilters({
               <DayPicker
                 mode="range"
                 selected={draftRange}
-                onSelect={setDraftRange}
+                onSelect={(range) => {
+                  setDateError("");
+                  setDraftRange(range);
+                }}
                 weekStartsOn={0}
                 classNames={{
                   root: "w-full",

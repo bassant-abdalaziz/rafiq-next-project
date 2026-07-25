@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { SectionHeader } from "@/components/dashboard/ui/section-header";
@@ -9,7 +9,7 @@ import {
   type StatisticsDateRange,
 } from "@/components/dashboard/ui/statistics/statistics-filters";
 import { getErrorMessage } from "@/utils/helpers";
-import { getTasksCalendarStats } from "@/actions/project";
+import { getProjects, getTasksCalendarStats } from "@/actions/project";
 import type { TaskStatus, TasksCalendarStatsResponse } from "@/types/project";
 
 import TotalTasksIcon from "@/assets/icons/total-tasks.svg";
@@ -17,6 +17,11 @@ import CompletedTasksIcon from "@/assets/icons/completed-tasks.svg";
 import OverDueTasksIcon from "@/assets/icons/overdue-tasks.svg";
 import { TaskCard } from "@/components/dashboard/ui/statistics/task-card";
 import { LoadingDots } from "@/components/dashboard/ui/loading-dots";
+
+type ProjectFilterOption = {
+  id: string;
+  name: string;
+};
 
 function formatDateForApi(date: Date) {
   const year = date.getFullYear();
@@ -59,10 +64,50 @@ export default function MyStatisticsPageClient() {
   const [projectId, setProjectId] = useState<string | null>(null);
   const [status, setStatus] = useState<TaskStatus | null>(null);
 
+  const [projects, setProjects] = useState<ProjectFilterOption[]>([]);
   const [stats, setStats] = useState<TasksCalendarStatsResponse | null>(null);
+
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
 
+  const fetchProjects = useCallback(
+    async ({ limit, offset }: { limit: number; offset: number }) => {
+      const response = await getProjects(limit, offset);
+
+      return {
+        items: response.projects,
+        totalCount: response.totalCount,
+      };
+    },
+    []
+  );
+
+  // Load projects once to display them in the project filter dropdown.
+  useEffect(() => {
+    const loadProjects = async () => {
+      try {
+        const response = await fetchProjects({
+          limit: 1000,
+          offset: 0,
+        });
+
+        const formattedProjects = response.items.map((project) => ({
+          id: project.id,
+          name: project.name,
+        }));
+
+        setProjects(formattedProjects);
+      } catch (error) {
+        const message = getErrorMessage(error);
+
+        toast.error(message);
+      }
+    };
+
+    void loadProjects();
+  }, [fetchProjects]);
+
+  // Load statistics whenever date range, project, or status changes.
   useEffect(() => {
     const loadStatistics = async () => {
       try {
@@ -99,12 +144,12 @@ export default function MyStatisticsPageClient() {
         description="Manage your deadlines and track team velocity."
       />
 
-      {/* Filter  Section */}
+      {/* Filter Section */}
       <StatisticsFilters
         dateRange={dateRange}
         projectId={projectId}
         status={status}
-        projects={[]}
+        projects={projects}
         onDateRangeChange={setDateRange}
         onProjectChange={setProjectId}
         onStatusChange={setStatus}
@@ -123,11 +168,13 @@ export default function MyStatisticsPageClient() {
           // Tasks Cards Section
           <div className="mt-8 flex flex-col gap-4 md:flex-row">
             <TaskCard title="TOTAL TASKS" icon={<TotalTasksIcon />} value={stats.total_tasks} />
+
             <TaskCard
               title="COMPLETED TASKS"
               icon={<CompletedTasksIcon />}
               value={stats.done_tasks}
             />
+
             <TaskCard
               title="OVERDUE TASKS"
               icon={<OverDueTasksIcon />}
