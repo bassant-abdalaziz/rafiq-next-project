@@ -151,3 +151,8 @@ export type StatisticsDateRange = {
   startDate: string;
   endDate: string;
 };
+export type TasksCountPerProjectItem = {
+  project_id: string;
+  project_name: string;
+  tasks_count: number;
+};

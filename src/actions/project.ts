@@ -13,6 +13,7 @@ import {
   ProjectPayload,
   TaskPayload,
   TasksCalendarStatsResponse,
+  TasksCountPerProjectItem,
   TaskStatus,
   UpdateEpicPayload,
 } from "@/types/project";
@@ -303,14 +304,17 @@ export async function getTasksCountPerProject({
   startDate,
   endDate,
 }: GetTasksCountPerProjectPayload) {
-  const response = await apiFetch("/rest/v1/rpc/get_tasks_count_per_project", {
-    method: "POST",
-    requiresAuth: true,
-    body: JSON.stringify({
-      p_start_date: startDate,
-      p_end_date: endDate,
-    }),
-  });
+  const response = await apiFetch<TasksCountPerProjectItem[]>(
+    "/rest/v1/rpc/get_tasks_count_per_project",
+    {
+      method: "POST",
+      requiresAuth: true,
+      body: JSON.stringify({
+        p_start_date: startDate,
+        p_end_date: endDate,
+      }),
+    }
+  );
 
   return response.data;
 }

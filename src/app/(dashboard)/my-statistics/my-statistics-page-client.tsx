@@ -6,8 +6,8 @@ import { toast } from "sonner";
 import { SectionHeader } from "@/components/dashboard/ui/section-header";
 import { StatisticsFilters } from "@/components/dashboard/ui/statistics/statistics-filters";
 import { getErrorMessage } from "@/utils/helpers";
-import { getProjects, getTasksCalendarStats } from "@/actions/project";
-import type { StatisticsDateRange, TaskStatus, TasksCalendarStatsResponse } from "@/types/project";
+import { getProjects, getTasksCalendarStats, getTasksCountPerProject } from "@/actions/project";
+import type { StatisticsDateRange, TaskStatus, TasksCalendarStatsResponse, TasksCountPerProjectItem } from "@/types/project";
 
 import TotalTasksIcon from "@/assets/icons/total-tasks.svg";
 import CompletedTasksIcon from "@/assets/icons/completed-tasks.svg";
@@ -15,6 +15,7 @@ import OverDueTasksIcon from "@/assets/icons/overdue-tasks.svg";
 import { TaskCard } from "@/components/dashboard/ui/statistics/task-card";
 import { LoadingDots } from "@/components/dashboard/ui/loading-dots";
 import { WeeklyCalendar } from "@/components/dashboard/ui/statistics/weekly-calendar";
+import { StatisticsSummary } from "@/components/dashboard/ui/statistics/statistics-summary";
 
 type ProjectFilterOption = {
   id: string;
@@ -64,6 +65,9 @@ export default function MyStatisticsPageClient() {
 
   const [projects, setProjects] = useState<ProjectFilterOption[]>([]);
   const [stats, setStats] = useState<TasksCalendarStatsResponse | null>(null);
+
+  const [projectsStats, setProjectsStats] = useState<TasksCountPerProjectItem[]>([]);
+  const [isProjectsStatsLoading, setIsProjectsStatsLoading] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
@@ -135,6 +139,29 @@ export default function MyStatisticsPageClient() {
     void loadStatistics();
   }, [dateRange.startDate, dateRange.endDate, projectId, status]);
 
+  useEffect(() => {
+    const loadProjectsStats = async () => {
+      try {
+        setIsProjectsStatsLoading(true);
+
+        const data = await getTasksCountPerProject({
+          startDate: dateRange.startDate,
+          endDate: dateRange.endDate,
+        });
+
+        setProjectsStats(data);
+      } catch (error) {
+        const message = getErrorMessage(error);
+
+        toast.error(message);
+      } finally {
+        setIsProjectsStatsLoading(false);
+      }
+    };
+
+    void loadProjectsStats();
+  }, [dateRange.startDate, dateRange.endDate]);
+
   return (
     <div className="w-full">
       <SectionHeader
@@ -183,6 +210,14 @@ export default function MyStatisticsPageClient() {
 
             {/* Weekly Calendar Section */}
             <WeeklyCalendar dateRange={dateRange} daily={stats.daily} />
+
+            {/* Tasks By Status + All Projects Section */}
+            <StatisticsSummary
+              totals={stats.totals}
+              totalTasks={stats.total_tasks}
+              projects={projectsStats}
+              isProjectsLoading={isProjectsStatsLoading}
+            />
           </>
         )}
       </div>
